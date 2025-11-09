@@ -226,6 +226,10 @@ class FaceVerifier:
         return frame
 
     def run(self):
+        # รีเซ็ตสถานะทุกครั้งที่เรียก
+        self.hold_start_time = None
+        self.verified = False
+
         self.open_camera()
         print("กำลังเปิดกล้อง... มองตรงเข้ากล้องให้ครบเวลาที่กำหนด")
         print("กด 'q' เพื่อยกเลิก")
@@ -243,16 +247,21 @@ class FaceVerifier:
 
                 cv2.imshow('Video', frame)
 
+                # ถ้าสแกนผ่านแล้ว รออีกแป๊บแล้วค่อยออก
                 if self.verified:
                     cv2.waitKey(1000)
                     break
 
                 if cv2.waitKey(1) & 0xFF == ord('q'):
+                    print("ยกเลิกการสแกนโดยผู้ใช้")
                     break
 
         finally:
             self.close_camera()
             print("ปิดโปรแกรมเรียบร้อย")
+
+        # คืนผลลัพธ์ให้โค้ดฝั่ง UI ใช้ตัดสินใจ
+        return self.verified
 
 
 if __name__ == "__main__":
