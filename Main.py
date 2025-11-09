@@ -94,7 +94,7 @@ class FullScreenImageApp:
         print("เริ่มสแกนใบหน้าเพื่อตรวจว่ากินยานะคะ...")
         
         # ซ่อนหน้า UI ชั่วคราว (จะเหลือแต่หน้าต่างกล้อง)
-        self.root.after(1500, lambda: self.root.withdraw())
+        # self.root.withdraw()
         self.root.update()
         
         # เรียกตัวสแกนหน้า (บล็อกจนกว่าจะสแกนเสร็จ / กดยกเลิก)
