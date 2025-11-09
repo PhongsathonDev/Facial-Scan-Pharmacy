@@ -93,12 +93,12 @@ class FullScreenImageApp:
     def on_button_click(self, event):
         print("เริ่มสแกนใบหน้าเพื่อตรวจว่ากินยานะคะ...")
 
+        # เรียกตัวสแกนหน้า (บล็อกจนกว่าจะสแกนเสร็จ / กดยกเลิก)
+        verified = self.verifier.run()
+        
         # ซ่อนหน้า UI ชั่วคราว (จะเหลือแต่หน้าต่างกล้อง)
         self.root.withdraw()
         self.root.update()
-
-        # เรียกตัวสแกนหน้า (บล็อกจนกว่าจะสแกนเสร็จ / กดยกเลิก)
-        verified = self.verifier.run()
 
         # กลับมาหน้า UI
         self.root.deiconify()
