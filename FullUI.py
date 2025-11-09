@@ -1,7 +1,7 @@
 import tkinter as tk
 from PIL import Image, ImageTk
 from datetime import datetime
-from main import FaceVerifier   # <<< ดึงคลาสจาก main.py
+from Facescan import FaceVerifier   # <<< ดึงคลาสจาก main.py
 
 class FullScreenImageApp:
     def __init__(self, root):
@@ -9,7 +9,7 @@ class FullScreenImageApp:
         self.root.title("แสดงรูปภาพเต็มจอ")
         self.root.attributes("-fullscreen", True)
 
-        self.Outline = 4  # ความหนาเส้นขอบปุ่ม
+        self.Outline = 0  # ความหนาเส้นขอบปุ่ม
 
         # โหลดรูปภาพและปรับขนาดให้เต็มจอ
         self.IMAGE_PATH = "bg.png"
@@ -49,6 +49,7 @@ class FullScreenImageApp:
         self.EatDay()
         self.DateNow()
         self.AlarmTime()
+        self.Time()
 
         # ปิดโปรแกรมเมื่อกด q
         self.root.bind('q', lambda event: self.root.destroy())
@@ -56,13 +57,9 @@ class FullScreenImageApp:
     # ---------- ปุ่มกินยา ----------
     def Eat_button(self):
         # วาดสี่เหลี่ยมเป็นปุ่ม
-        button_frame = self.canvas.create_rectangle(450, 540, 820, 670,
-                                                    outline="black", width=self.Outline)
+        button_frame = self.canvas.create_rectangle(450, 540, 820, 670,outline="black", width=self.Outline)
         # ผูก event คลิก
         self.canvas.tag_bind(button_frame, "<Button-1>", self.on_button_click)
-
-        # ถ้าอยากให้เห็นข้อความบนปุ่ม เพิ่ม text ซ้อนเข้าไป
-        self.canvas.create_text(635, 605, text="กินยา", font=("Prompt", 32, "bold"))
 
     # ---------- แสดงจำนวนวันที่กินยาแล้ว ----------
     def EatDay(self):
@@ -85,8 +82,12 @@ class FullScreenImageApp:
     # ---------- เวลาแจ้งเตือน/เวลาแสดงบนหน้าจอ ----------
     def AlarmTime(self):
         current_time = datetime.now().strftime("%H:%M")
-        self.canvas.create_text(580, 180, text=current_time,
-                                font=("Prompt", 28, "bold"))
+        self.canvas.create_text(1120, 180, text=current_time,font=("Prompt", 28, "bold"))
+        
+    def Time(self):
+        time_str = datetime.now().strftime("%H:%M:%S")
+        
+        self.canvas.create_text(650, 425, text=time_str, font=("Prompt", 36, "bold"))
 
     # ---------- Event ตอนกดปุ่มกินยา ----------
     def on_button_click(self, event):
