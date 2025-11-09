@@ -5,7 +5,7 @@ class FullScreenImageApp:
     def __init__(self, root):
         self.root = root
         self.root.title("แสดงรูปภาพเต็มจอ")
-        # self.root.attributes("-fullscreen", True)
+        self.root.attributes("-fullscreen", True)
 
         self.Outline = 4  # ความหนาเส้นขอบปุ่ม
 
@@ -30,11 +30,14 @@ class FullScreenImageApp:
 
     def create_button(self):
         # วาดสี่เหลี่ยมเป็นปุ่ม
-        button_frame = self.canvas.create_rectangle(450, 160, 820, 260, outline="black", width=self.Outline, )
+        button_frame = self.canvas.create_rectangle(450, 160, 820, 260, outline="black", width=self.Outline, fill="white")
+        # ใส่ข้อความในปุ่ม
+        self.canvas.create_text(635, 210, text="ปุ่มตัวอย่าง", font=("Prompt", 24, "bold"), fill="black")
+        # ทำให้คลิกได้
         self.canvas.tag_bind(button_frame, "<Button-1>", self.on_button_click)
 
     def on_button_click(self, event):
-        print("OK")
+        print("คลิกปุ่มแล้วนะคะ 💕")
         # จะให้ทำอะไรเพิ่มเติมก็เขียนต่อในนี้ได้ เช่น:
         # self.set_floor_and_go(3, "Page 3")
 
