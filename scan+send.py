@@ -58,7 +58,8 @@ class FaceVerifier:
             "sheet": self.sheet_name,
             "data": {
                 # Timestamp ว่างไว้ให้ Apps Script ใส่เอง
-                "Timestamp": "",
+                "Date": "",
+                "Time": "",
                 "Name": self.known_name,
                 "FaceID": self.face_id,
                 "Status": "Verified",
@@ -67,7 +68,7 @@ class FaceVerifier:
         }
 
         try:
-            response = requests.post(self.webapp_url, json=payload, timeout=5)
+            response = requests.post(self.webapp_url, json=payload, timeout=10)
             print("ส่งไป Google Sheet → Status code:", response.status_code)
             print("Response text:", response.text)
         except Exception as e:
@@ -199,17 +200,17 @@ class FaceVerifier:
             print("ปิดโปรแกรมเรียบร้อย")
 
 
-if __name__ == "__main__":
-    WEBAPP_URL = "https://script.google.com/macros/s/AKfycbwccadFbmRmLNJVAIxbPpj6XYB5alogmmN9WIIfWO2abITZ9OuxuLMYFgp3ATVDFFkXYA/exec"
+if _name_ == "_main_":
+    WEBAPP_URL = "https://script.google.com/macros/s/AKfycbypFJrwXJVcEPNyveBYXplgGsO2CxZLnWvaHQgKbVLbThRwd7vbksIqAItmVtRLD-4v/exec"
 
     verifier = FaceVerifier(
         known_image_path="paper.jpeg",
         known_name="Paper",
-        tolerance=0.45,
-        hold_seconds=3.0,
+        tolerance=0.5,
+        hold_seconds=2.0,
         camera_index=0,
         webapp_url=WEBAPP_URL,
-        sheet_name="sheet1",
-        face_id="user_001"
+        sheet_name="Patient",
+        face_id="Paper"
     )
     verifier.run()
