@@ -24,6 +24,7 @@ label = tk.Label(root, image=photo)
 label.pack(fill="both", expand=True)
 label.image = photo  # ป้องกัน garbage collection
 
+
 # ---------- ฟังก์ชันปิดหน้าต่างเมื่อกด q ----------
 def close_on_q(event):
     root.destroy()
