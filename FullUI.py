@@ -28,6 +28,7 @@ class FullScreenImageApp:
         self.EatDay()
         self.DateNow()
         self.AlarmTime()
+        self.Time()
 
         # ผูกปุ่ม q ให้ปิดโปรแกรม
         self.root.bind('q', lambda event: self.root.destroy())
@@ -40,15 +41,20 @@ class FullScreenImageApp:
     def EatDay(self):
         self.canvas.create_text(132, 325, text="3", font=("Prompt", 32, "bold"))
         
+    def Time(self):
+        time_str = datetime.now().strftime("%H:%M:%S")
+        
+        self.canvas.create_text(650, 425, text=time_str, font=("Prompt", 36, "bold"))
+        
     def DateNow(self):
         current_date = datetime.now().strftime("%d/%m/%Y")
 
         self.canvas.create_text(280, 180, text=current_date,font=("Prompt", 28, "bold"))
         
     def AlarmTime(self):
-        current_time = time_str = datetime.now().strftime("%H:%M")
+        alarm = "18:30"
 
-        self.canvas.create_text(580, 180, text=current_time,font=("Prompt", 28, "bold"))
+        self.canvas.create_text(1120, 180, text=alarm,font=("Prompt", 28, "bold"))
 
     def on_button_click(self, event):
         print("คลิกปุ่มแล้วนะคะ 💕")
