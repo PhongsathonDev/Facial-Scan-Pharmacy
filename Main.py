@@ -1,15 +1,15 @@
 import tkinter as tk
 from PIL import Image, ImageTk
 from datetime import datetime
-import requests                    # <<< เพิ่มสำหรับส่ง LINE
-from Facescan import FaceVerifier  # <<< ดึงคลาสจาก main.py
+import requests                    # สำหรับส่ง LINE
+from Facescan import FaceVerifier  # ดึงคลาสจาก main.py
 
 # ==== ตั้งค่า LINE Notify ====
-LINE_TOKEN = "PUT_YOUR_LINE_NOTIFY_TOKEN_HERE"   # <<< ใส่ Token ของตัวเองตรงนี้
+LINE_TOKEN = "90PR4QmENVZ8HgX6H9Ee7lrByaFndu4+VBjrC3iUJN0kmXQ7zma/srxGsx4gCQ3bdwPaqS38zcVjtuANVYZoqAgey4AhockHFJ+OK/3K6aGnEa11RuGpM51rDltAT8lXe69f6wbkatpra28B7WLdFAdB04t89/1O/w1cDnyilFU="
 
 def send_line_notify(message: str):
     """ส่งข้อความไป LINE Notify"""
-    if not LINE_TOKEN or LINE_TOKEN == "PUT_YOUR_LINE_NOTIFY_TOKEN_HERE":
+    if not LINE_TOKEN or LINE_TOKEN == "90PR4QmENVZ8HgX6H9Ee7lrByaFndu4+VBjrC3iUJN0kmXQ7zma/srxGsx4gCQ3bdwPaqS38zcVjtuANVYZoqAgey4AhockHFJ+OK/3K6aGnEa11RuGpM51rDltAT8lXe69f6wbkatpra28B7WLdFAdB04t89/1O/w1cDnyilFU=":
         print("⚠ ยังไม่ได้ใส่ LINE_TOKEN เลยนะคะ เลยส่ง LINE ไม่ได้")
         return
 
@@ -39,7 +39,7 @@ class FullScreenImageApp:
         # ---------- ตั้งค่า Alarm ----------
         self.alarm_hour = 20       # 20 นาฬิกา
         self.alarm_minute = 0      # นาที 00
-        self.alarm_triggered_today = False  # กันไม่ให้ยิงซ้ำหลายรอบในวันเดียว
+        self.alarm_triggered_today = False  # กันยิงซ้ำในวันเดียว
 
         # ---------- โหลดรูปภาพพื้นหลัง ----------
         self.IMAGE_PATH = "bg.png"
@@ -77,12 +77,15 @@ class FullScreenImageApp:
             serial_baudrate=115200
         )
 
-        # วาด UI
+        # วาด UI หลัก
         self.Eat_button()
         self.EatDay()
         self.DateNow()
         self.AlarmTime()
-        self.Time()   # เริ่มนาฬิกา + ระบบเช็ก alarm
+        self.Time()               # นาฬิกา + เช็ก alarm
+
+        # >>> ปุ่มจำลองแจ้งเตือน <<<
+        self.AlarmTest_button()
 
         # ปิดโปรแกรมเมื่อกด q
         self.root.bind('q', lambda event: self.root.destroy())
@@ -148,7 +151,7 @@ class FullScreenImageApp:
 
     # ---------- เช็กว่าได้เวลา Alarm หรือยัง ----------
     def check_alarm(self, now: datetime):
-        # รีเซ็ตสถานะตอนเที่ยงคืน เผื่อให้ยิงเตือนวันถัดไปได้
+        # รีเซ็ตสถานะตอนเที่ยงคืน
         if now.hour == 0 and now.minute == 0 and now.second < 5:
             self.alarm_triggered_today = False
 
@@ -160,6 +163,27 @@ class FullScreenImageApp:
             print("🔔 ถึงเวลา 20:00 น. แล้วนะคะ กำลังส่งแจ้งเตือนไป LINE")
             send_line_notify("🔔 ถึงเวลา 20:00 น. ทานยาด้วยนะคะ 🕗")
             self.alarm_triggered_today = True
+
+    # ---------- ปุ่มจำลอง Alarm ----------
+    def AlarmTest_button(self):
+        # สร้างปุ่มด้านขวาของปุ่มกินยา (ปรับตำแหน่งได้ตามใจเลยนะคะ)
+        rect = self.canvas.create_rectangle(
+            880, 540, 1250, 670,
+            outline="black", width=self.Outline
+        )
+        text = self.canvas.create_text(
+            1065, 605, text="TEST ALARM",
+            font=("Prompt", 20, "bold")
+        )
+
+        # ผูก event ให้ทั้ง rect และ text
+        self.canvas.tag_bind(rect, "<Button-1>", self.on_alarm_test_click)
+        self.canvas.tag_bind(text, "<Button-1>", self.on_alarm_test_click)
+
+    def on_alarm_test_click(self, event):
+        print("🔔 [TEST] กดปุ่มจำลองแจ้งเตือน 20:00 → ส่ง LINE ทันที")
+        msg = "🔔 [TEST] จำลองว่าเป็นเวลา 20:00 แล้วนะคะ ทานยาด้วยน้า 🕗"
+        send_line_notify(msg)
 
     # ---------- Event ตอนกดปุ่มกินยา ----------
     def on_button_click(self, event):
