@@ -9,7 +9,7 @@ LINE_TOKEN = "90PR4QmENVZ8HgX6H9Ee7lrByaFndu4+VBjrC3iUJN0kmXQ7zma/srxGsx4gCQ3bdw
 
 def send_line_notify(message: str):
     """ส่งข้อความไป LINE Notify"""
-    if not LINE_TOKEN or LINE_TOKEN == "90PR4QmENVZ8HgX6H9Ee7lrByaFndu4+VBjrC3iUJN0kmXQ7zma/srxGsx4gCQ3bdwPaqS38zcVjtuANVYZoqAgey4AhockHFJ+OK/3K6aGnEa11RuGpM51rDltAT8lXe69f6wbkatpra28B7WLdFAdB04t89/1O/w1cDnyilFU=":
+    if not LINE_TOKEN or LINE_TOKEN == "PUT_YOUR_LINE_NOTIFY_TOKEN_HERE":
         print("⚠ ยังไม่ได้ใส่ LINE_TOKEN เลยนะคะ เลยส่ง LINE ไม่ได้")
         return
 
@@ -22,7 +22,13 @@ def send_line_notify(message: str):
     }
 
     try:
-        resp = requests.post(url, headers=headers, data=data, timeout=10)
+        resp = requests.post(
+            url,
+            headers=headers,
+            data=data,
+            timeout=10,
+            verify=False       # <<< ปิดตรวจ cert (ไม่ปลอดภัย แค่ใช้ทดสอบชั่วคราว)
+        )
         print("LINE Notify status:", resp.status_code, resp.text)
     except Exception as e:
         print("ส่ง LINE ไม่สำเร็จ:", e)
