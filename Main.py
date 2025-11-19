@@ -118,12 +118,11 @@ class FullScreenImageApp:
             canvas.create_image(0, 0, image=photo, anchor="nw")
             canvas.image = photo  # เก็บ reference กันภาพหาย
 
-
             close_btn = canvas.create_rectangle(0, 560, 150, 690, outline="black", width=self.Outline)
-
-
-            # ผูก Event คลิกที่ปุ่มสี่เหลี่ยมนี้ -> ให้ปิดหน้าต่าง (top.destroy)
             canvas.tag_bind(close_btn, "<Button-1>", lambda e: top.destroy())
+            
+            languages_btn = canvas.create_rectangle(1050, 20, 1280, 90, outline="black", width=5)
+            canvas.tag_bind(languages_btn, "<Button-1>", lambda e: top.destroy())
             
             # ยังคงกด q ที่คีย์บอร์ดเพื่อปิดได้เหมือนเดิม (เผื่อไว้)
             top.bind("q", lambda e: top.destroy())
