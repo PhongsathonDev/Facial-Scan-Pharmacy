@@ -2,7 +2,7 @@ import tkinter as tk
 from PIL import Image, ImageTk
 from datetime import datetime
 import requests, json, threading
-# from Facescan import FaceVerifier
+from Facescan import FaceVerifier
 
 class FullScreenImageApp:
     def __init__(self, root):
@@ -44,18 +44,18 @@ class FullScreenImageApp:
 
         # ----- Face Recognition -----
         WEBAPP_URL = "https://script.google.com/macros/s/AKfycbypFJrwXJVcEPNyveBYXplgGsO2CxZLnWvaHQgKbVLbThRwd7vbksIqAItmVtRLD-4v/exec"
-        # self.verifier = FaceVerifier(
-        #     known_image_path="paper.jpeg",
-        #     known_name="Paper",
-        #     tolerance=0.5,
-        #     hold_seconds=2.0,
-        #     camera_index=0,
-        #     webapp_url=WEBAPP_URL,
-        #     sheet_name="Patient",
-        #     face_id="Paper",
-        #     serial_port="/dev/ttyUSB0",
-        #     serial_baudrate=115200
-        # )
+        self.verifier = FaceVerifier(
+            known_image_path="paper.jpeg",
+            known_name="Paper",
+            tolerance=0.5,
+            hold_seconds=2.0,
+            camera_index=0,
+            webapp_url=WEBAPP_URL,
+            sheet_name="Patient",
+            face_id="Paper",
+            serial_port="/dev/ttyUSB0",
+            serial_baudrate=115200
+        )
 
         # ----- วาด UI -----
         self.Eat_button()
