@@ -2,7 +2,7 @@ import tkinter as tk
 from PIL import Image, ImageTk
 from datetime import datetime
 import requests, json, threading
-from Facescan import FaceVerifier
+# from Facescan import FaceVerifier
 
 class FullScreenImageApp:
     def __init__(self, root):
@@ -38,21 +38,22 @@ class FullScreenImageApp:
 
         # ----- Face Recognition -----
         WEBAPP_URL = "https://script.google.com/macros/s/AKfycbypFJrwXJVcEPNyveBYXplgGsO2CxZLnWvaHQgKbVLbThRwd7vbksIqAItmVtRLD-4v/exec"
-        self.verifier = FaceVerifier(
-            known_image_path="paper.jpeg",
-            known_name="Paper",
-            tolerance=0.5,
-            hold_seconds=2.0,
-            camera_index=0,
-            webapp_url=WEBAPP_URL,
-            sheet_name="Patient",
-            face_id="Paper",
-            serial_port="/dev/ttyUSB0",
-            serial_baudrate=115200
-        )
+        # self.verifier = FaceVerifier(
+        #     known_image_path="paper.jpeg",
+        #     known_name="Paper",
+        #     tolerance=0.5,
+        #     hold_seconds=2.0,
+        #     camera_index=0,
+        #     webapp_url=WEBAPP_URL,
+        #     sheet_name="Patient",
+        #     face_id="Paper",
+        #     serial_port="/dev/ttyUSB0",
+        #     serial_baudrate=115200
+        # )
 
         # ----- วาด UI -----
         self.Eat_button()
+        self.Manual()
         self.EatDay()
         self.DateNow()
         self.AlarmTime()
@@ -69,6 +70,10 @@ class FullScreenImageApp:
     def Eat_button(self):
         btn = self.canvas.create_rectangle(450, 540, 820, 670, outline="black", width=self.Outline)
         self.canvas.tag_bind(btn, "<Button-1>", self.on_button_click)
+        
+    def Manual(self):
+        btn = self.canvas.create_rectangle(0, 560, 150, 690, outline="black", width=5)
+        self.canvas.tag_bind(btn, "<Button-1>", self.on_button_click)
 
     # ---------- ปุ่ม "ทดสอบแจ้งเตือน" ----------
     def TestAlert_button(self):
@@ -80,7 +85,7 @@ class FullScreenImageApp:
     # ---------- นับวันกินยา ----------
     def EatDay(self):
         self.eat_days = 0
-        self.eatday_text_id = self.canvas.create_text(132, 325, text=str(self.eat_days), font=("Prompt", 32, "bold"))
+        self.eatday_text_id = self.canvas.create_text(132, 325, text=str(self.eat_days), font=("Prompt", 32, "bold"), fill="white")
 
     def increment_eatday(self):
         self.eat_days += 1
@@ -89,16 +94,16 @@ class FullScreenImageApp:
     # ---------- วันที่ ----------
     def DateNow(self):
         current_date = datetime.now().strftime("%d/%m/%Y")
-        self.canvas.create_text(280, 180, text=current_date, font=("Prompt", 28, "bold"))
+        self.canvas.create_text(280, 180, text=current_date, font=("Prompt", 28, "bold"), fill="white")
 
     # ---------- เวลาแจ้งเตือน (20:00) ----------
     def AlarmTime(self):
         alarm_str = f"{self.alarm_hour:02d}:{self.alarm_minute:02d}"
-        self.canvas.create_text(1120, 180, text=alarm_str, font=("Prompt", 28, "bold"))
+        self.canvas.create_text(1100, 180, text=alarm_str, font=("Prompt", 28, "bold"), fill="white")
 
     # ---------- เวลาแสดงปัจจุบัน ----------
     def Time(self):
-        self.time_text_id = self.canvas.create_text(650, 425, text="", font=("Prompt", 36, "bold"))
+        self.time_text_id = self.canvas.create_text(650, 425, text="", font=("Prompt", 50, "bold"), fill="white")
         self.update_time()
 
     def update_time(self):
