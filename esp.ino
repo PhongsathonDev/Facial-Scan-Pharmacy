@@ -1,8 +1,14 @@
+#include <SoftwareSerial.h>
+#include "RedMP3.h"
 #define IN1 19
 #define IN2 21
 #define LIMIT_SENSOR 14
 #define CONTROL_PIN 18 
 
+
+#define MP3_RX 15
+#define MP3_TX 2
+MP3 mp3(MP3_RX, MP3_TX);
 const int PWM_CHANNEL = 0;
 const int PWM_FREQ    = 5000;
 const int PWM_RES     = 8;
@@ -36,7 +42,10 @@ void loop() {
       Serial.println("✅ ตรวจจับใบหน้าสำเร็จ! กำลังจ่ายยา...");
       dispenseMedicine();
     }
-
+    if (cmd == 'a') { 
+      mp3.playWithVolume(002, 30);
+    }
+mp3.playWithVolume(001, 30);
     if (cmd == 's') {
       int newSpeed = Serial.parseInt();
       if (newSpeed < 0)   newSpeed = 0;
@@ -84,7 +93,7 @@ void dispenseMedicine() {
   }
 
   stopMotor();
-
+  mp3.playWithVolume(001, 30);
   if (!isError) {
     Serial.println("🟢 ถาดจ่ายยาทำงานเสร็จสมบูรณ์");
   } else {
