@@ -3,6 +3,8 @@ from PIL import Image, ImageTk
 from datetime import datetime
 import requests, json, threading
 from Facescan import FaceVerifier
+# [1] นำเข้าฟังก์ชันลงทะเบียนใบหน้า
+from register_face import register_new_face 
 
 class FullScreenImageApp:
     def __init__(self, root):
@@ -139,6 +141,17 @@ class FullScreenImageApp:
         self.canvas.tag_bind(btn_manual, "<Button-1>", self.switch_to_manual_mode)
         self.main_ui_items.append(btn_manual)
 
+        # [2] สร้างปุ่มใหม่: ลงทะเบียนใบหน้า (มุมซ้ายบน)
+        # สร้างกรอบปุ่ม
+        btn_register = self.canvas.create_rectangle(20, 20, 220, 90, outline="black", width=2, fill="#e0e0e0", tags="btn_register")
+        self.canvas.tag_bind(btn_register, "<Button-1>", self.on_register_click)
+        self.main_ui_items.append(btn_register)
+        
+        # สร้างข้อความบนปุ่ม
+        reg_text = self.canvas.create_text(120, 55, text="ลงทะเบียนใบหน้า", font=("Prompt", 14, "bold"), fill="black", tags="btn_register_text")
+        self.canvas.tag_bind(reg_text, "<Button-1>", self.on_register_click)
+        self.main_ui_items.append(reg_text)
+
     def build_manual_ui(self):
         """สร้างองค์ประกอบของหน้าคู่มือ (ซ่อนไว้ก่อน)"""
         # 1. ปุ่มย้อนกลับ (ซ้ายล่าง - ตำแหน่งเดียวกับปุ่มเปิดคู่มือ)
@@ -152,42 +165,60 @@ class FullScreenImageApp:
         self.manual_ui_items.append(btn_lang)
 
     # ============================
+    # ฟังก์ชันสำหรับปุ่มลงทะเบียนใบหน้า
+    # ============================
+    def on_register_click(self, event):
+        if self.is_scanning: return
+        self.is_scanning = True
+        
+        print("⚙️ กำลังเข้าสู่โหมดลงทะเบียนใบหน้า...")
+        
+        # 1. ซ่อนหน้าต่างหลักชั่วคราว เพื่อให้หน้ากล้อง OpenCV ขึ้นมาแทน
+        self.root.withdraw()
+        
+        try:
+            # 2. เรียกฟังก์ชันจากไฟล์ register_face.py
+            register_new_face()
+            
+            # 3. สั่งให้ระบบ FaceVerifier โหลดไฟล์ภาพใหม่ทันที (ไม่ต้องปิดเปิดโปรแกรมใหม่)
+            print("🔄 กำลังอัปเดตข้อมูลใบหน้าในระบบ...")
+            self.verifier.known_face_encodings, self.verifier.known_face_names = self.verifier._load_known_faces()
+            print("✅ อัปเดตข้อมูลใบหน้าเสร็จสิ้น")
+            
+        except Exception as e:
+            print(f"❌ เกิดข้อผิดพลาดในการลงทะเบียน: {e}")
+        
+        # 4. เรียกหน้าต่างหลักกลับมา
+        self.root.deiconify()
+        self.root.attributes("-fullscreen", True)
+        self.root.focus_force() # ดึงโฟกัสกลับมาที่โปรแกรม
+        self.is_scanning = False
+
+    # ============================
     # 6. Logic การสลับหน้าจอ (หัวใจสำคัญ)
     # ============================
     def switch_to_manual_mode(self, event):
         print("📖 เข้าสู่โหมดคู่มือ")
-        # 1. เปลี่ยนพื้นหลังเป็นคู่มือ
         self.update_manual_bg()
-        
-        # 2. ซ่อน UI หน้าหลักทั้งหมด
         for item in self.main_ui_items:
             self.canvas.itemconfigure(item, state='hidden')
-            
-        # 3. แสดง UI หน้าคู่มือ
         for item in self.manual_ui_items:
             self.canvas.itemconfigure(item, state='normal')
 
     def switch_to_main_mode(self, event):
         print("🏠 กลับสู่หน้าหลัก")
-        # 1. เปลี่ยนพื้นหลังกลับเป็น Main
         self.canvas.itemconfig(self.bg_item, image=self.assets['bg'])
-
-        # 2. ซ่อน UI หน้าคู่มือ
         for item in self.manual_ui_items:
             self.canvas.itemconfigure(item, state='hidden')
-
-        # 3. แสดง UI หน้าหลักกลับมา
         for item in self.main_ui_items:
             self.canvas.itemconfigure(item, state='normal')
 
     def toggle_manual_language(self, event):
-        # สลับภาษา TH <-> EN
         self.manual_lang = "EN" if self.manual_lang == "TH" else "TH"
         print(f"🌐 เปลี่ยนภาษาเป็น: {self.manual_lang}")
         self.update_manual_bg()
 
     def update_manual_bg(self):
-        """อัปเดตภาพพื้นหลังคู่มือตามภาษาปัจจุบัน"""
         if self.manual_lang == "TH":
             self.canvas.itemconfig(self.bg_item, image=self.assets['manual_th'])
         else:
@@ -209,11 +240,9 @@ class FullScreenImageApp:
 
     def check_alarm_time(self):
         now = datetime.now()
-        # ตรวจสอบเวลา (เช็กวินาทีที่ 0 เพื่อไม่ให้ส่งซ้ำรัวๆ ในนาทีนั้น)
         if now.hour == self.alarm_hour and now.minute == self.alarm_minute and now.second == 0:
              threading.Thread(target=self.send_line_alert, args=("⏰ ถึงเวลาทานยาแล้วนะคะ อย่าลืมกดปุ่มและสแกนหน้านะคะ 💊",)).start()
-        
-        self.root.after(1000, self.check_alarm_time) # ตรวจสอบทุก 1 วินาที
+        self.root.after(1000, self.check_alarm_time)
 
     def send_line_alert(self, message_text):
         headers = {
@@ -242,15 +271,10 @@ class FullScreenImageApp:
 
         self.is_scanning = True
         print("📷 เริ่มสแกนใบหน้า...")
-        
-        # เรียกสแกนใบหน้า (จะเปิดหน้าต่าง OpenCV ขึ้นมาทับ)
-        # ใช้ after เล็กน้อยเพื่อให้ UI อัปเดตก่อนเข้า blocking call (เผื่อมี animation ปุ่ม)
         self.root.after(10, self._run_scan_process)
 
     def _run_scan_process(self):
         verified = self.verifier.run()
-        
-        # เมื่อสแกนเสร็จ กลับมา Focus ที่หน้าจอหลักให้แน่นหนา
         self.root.attributes("-fullscreen", True)
         self.root.focus_force()
 
@@ -260,7 +284,6 @@ class FullScreenImageApp:
         else:
             print("❌ ไม่ผ่าน")
         
-        # หน่วงเวลา 1 วินาทีก่อนให้กดใหม่ได้ (Cooldown)
         self.root.after(1000, lambda: setattr(self, 'is_scanning', False))
 
 if __name__ == "__main__":
