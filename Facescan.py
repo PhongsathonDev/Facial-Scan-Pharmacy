@@ -4,6 +4,9 @@ import numpy as np
 import time
 import requests
 import serial
+import threading
+import json
+import os
 
 class FaceVerifier:
     def __init__(
@@ -28,6 +31,9 @@ class FaceVerifier:
         self.webapp_url = webapp_url
         self.sheet_name = sheet_name
         self.face_id = face_id
+        
+        # ชื่อไฟล์สำหรับเก็บข้อมูลตอนไม่มีเน็ต
+        self.offline_file = "offline_logs.json"
 
         # ====== Serial ไปยัง ESP32 ======
         self.serial_port = serial_port
@@ -48,14 +54,18 @@ class FaceVerifier:
         self.verified = False
         self.video_capture = None
 
-    # ---------- Send Google Sheet ----------
-    def send_log_to_sheet(self, note: str = "Face verified") -> bool:
-        if not self.webapp_url:
-            return False
+    # ---------- Send Google Sheet (System Offline Support) ----------
+    def send_log_to_sheet(self, note: str = "Face verified"):
+        """เรียกใช้งานใน Thread แยก เพื่อไม่ให้โปรแกรมหลักสะดุด"""
+        threading.Thread(target=self._send_log_worker, args=(note,), daemon=True).start()
+
+    def _send_log_worker(self, note):
+        """ฟังก์ชันเบื้องหลังสำหรับจัดการการส่งข้อมูล"""
+        # 1. เตรียมข้อมูล Payload
         payload = {
             "sheet": self.sheet_name,
             "data": {
-                "Date": "",
+                "Date": "", # Google Script จะใส่เวลาให้
                 "Time": "",
                 "Name": self.known_name,
                 "FaceID": self.face_id,
@@ -63,21 +73,96 @@ class FaceVerifier:
                 "Note": note
             }
         }
-        try:
-            response = requests.post(self.webapp_url, json=payload, timeout=10)
-            return response.status_code == 200
-        except Exception:
+
+        # 2. ลองส่งข้อมูลเก่าที่ค้างอยู่ก่อน (ถ้ามีเน็ตจะส่งออกไป)
+        self._retry_offline_logs()
+
+        # 3. ส่งข้อมูลปัจจุบัน
+        success = self._post_to_webapp(payload)
+        
+        # 4. ถ้าส่งไม่ผ่าน ให้บันทึกลงไฟล์ไว้ส่งทีหลัง
+        if not success:
+            print(f"⚠️ ไม่สามารถเชื่อมต่อเน็ตได้ บันทึกข้อมูลลง {self.offline_file}")
+            self._save_offline_log(payload)
+
+    def _post_to_webapp(self, payload):
+        """ยิง Request จริง"""
+        if not self.webapp_url:
             return False
+        try:
+            # timeout 3 วินาทีพอ ถ้าช้ากว่านี้ถือว่าเน็ตไม่ดี ตัดไป offline เลย
+            response = requests.post(self.webapp_url, json=payload, timeout=3)
+            if response.status_code == 200:
+                print(f"☁️ ส่งข้อมูล {payload['data']['Name']} สำเร็จ")
+                return True
+        except Exception as e:
+            pass # เงียบไว้ แล้ว return False
+        return False
+
+    def _save_offline_log(self, payload):
+        """บันทึกข้อมูลลง JSON File ต่อท้าย"""
+        logs = []
+        # อ่านของเก่าขึ้นมา
+        if os.path.exists(self.offline_file):
+            try:
+                with open(self.offline_file, "r", encoding="utf-8") as f:
+                    logs = json.load(f)
+            except:
+                logs = []
+        
+        logs.append(payload)
+        
+        # เขียนกลับลงไฟล์
+        with open(self.offline_file, "w", encoding="utf-8") as f:
+            json.dump(logs, f, ensure_ascii=False, indent=2)
+
+    def _retry_offline_logs(self):
+        """พยายามส่งข้อมูลที่ค้างอยู่ในไฟล์"""
+        if not os.path.exists(self.offline_file):
+            return
+
+        try:
+            with open(self.offline_file, "r", encoding="utf-8") as f:
+                logs = json.load(f)
+        except:
+            return
+
+        if not logs:
+            return
+
+        print(f"🔄 กำลังทยอยส่งข้อมูล Offline จำนวน {len(logs)} รายการ...")
+        remaining_logs = []
+        sent_count = 0
+
+        for log in logs:
+            if self._post_to_webapp(log):
+                sent_count += 1
+            else:
+                remaining_logs.append(log) # ยังส่งไม่ได้ เก็บไว้ก่อน
+        
+        if sent_count > 0:
+            print(f"✅ ส่งข้อมูลย้อนหลังสำเร็จ {sent_count} รายการ")
+
+        # บันทึกส่วนที่เหลือกลับลงไฟล์ (ถ้าส่งหมดแล้วก็ลบไฟล์ หรือบันทึก list ว่าง)
+        if remaining_logs:
+            with open(self.offline_file, "w", encoding="utf-8") as f:
+                json.dump(remaining_logs, f, ensure_ascii=False, indent=2)
+        else:
+            # ส่งหมดแล้ว ลบไฟล์ทิ้ง
+            os.remove(self.offline_file)
 
     # ---------- Send ESP32 ----------
     def send_command_to_esp32(self, cmd: str = "f"):
         if self.ser is None:
+            # ถ้าไม่มี Serial จริง ให้ข้ามไป (หรือ print test)
+            # print(f"Simulation: Sent '{cmd}' to ESP32")
             return
         try:
             self.ser.write(cmd.encode("utf-8"))
             self.ser.flush()
-        except Exception:
-            pass
+            print(f"➡️ ส่งคำสั่ง '{cmd}' ไปยัง ESP32")
+        except Exception as e:
+            print(f"❌ ส่ง Serial ไม่ได้: {e}")
 
     # ---------- Face Recognition Core ----------
     def _load_known_faces(self):
@@ -86,7 +171,7 @@ class FaceVerifier:
             encoding = face_recognition.face_encodings(image)[0]
             return [encoding], [self.known_name]
         except Exception as e:
-            print(f"❌ Error: {e}")
+            print(f"❌ Error loading face: {e}")
             return [], []
 
     def open_camera(self):
@@ -126,111 +211,49 @@ class FaceVerifier:
         return face_locations, face_names, recognized_this_frame
 
     # ========================================================
-    # 🎨 UI: TUBERBOX THEME (Sage Green + Glassmorphism)
+    # 🎨 UI: TUBERBOX THEME
     # ========================================================
     def _draw_tuberbox_ui(self, frame, face_locations, face_names):
         height, width, _ = frame.shape
-        
-        # --- Color Palette (ดึงมาจากรูป Main Menu) ---
-        # BGR Format
-        COLOR_SAGE_GREEN = (161, 214, 162)   # เขียวพาสเทลแบบปุ่มรับยา
-        COLOR_DARK_GLASS = (40, 40, 40)      # สีดำจางๆ แบบกล่องข้อความ
+        COLOR_SAGE_GREEN = (161, 214, 162)
         COLOR_WHITE = (255, 255, 255)
-        COLOR_ALERT = (150, 150, 255)        # สีแดงอ่อนๆ (ใช้แดงสดจะดูดุไป)
+        COLOR_ALERT = (150, 150, 255)
 
-        # 1. Header Bar (แถบบนเหมือนในภาพ)
-        # สร้าง overlay สีดำจางๆ ด้านบน
         overlay = frame.copy()
         cv2.rectangle(overlay, (0, 0), (width, 80), (30, 30, 30), -1) 
-        alpha = 0.8 # ความโปร่งแสง
-        cv2.addWeighted(overlay, alpha, frame, 1 - alpha, 0, frame)
+        cv2.addWeighted(overlay, 0.8, frame, 0.2, 0, frame)
 
-        # ข้อความ Header
         cv2.putText(frame, "Face Verification", (30, 50), cv2.FONT_HERSHEY_SIMPLEX, 1.0, COLOR_WHITE, 2)
         
-        # เวลา Realtime มุมขวาบน (เหมือนใน UI หลัก)
-        time_str = time.strftime("%H:%M:%S")
-        text_size = cv2.getTextSize(time_str, cv2.FONT_HERSHEY_SIMPLEX, 0.8, 2)[0]
-        
-        # วาดกล่องเวลา (Glass Box)
-        box_x1 = width - 180
-        box_y1 = 15
-        box_x2 = width - 20
-        box_y2 = 65
-        
-        # Time Box Overlay
-        overlay_time = frame.copy()
-        cv2.rectangle(overlay_time, (box_x1, box_y1), (box_x2, box_y2), (100, 100, 100), -1)
-        cv2.addWeighted(overlay_time, 0.4, frame, 0.6, 0, frame) # จางๆ
-        
-        # Time Text
-        cv2.putText(frame, time_str, (box_x1 + 25, box_y1 + 35), cv2.FONT_HERSHEY_SIMPLEX, 0.8, COLOR_WHITE, 2)
-
-        # 2. Logic การแสดงผลหน้า
         if self.verified:
-            # --- SUCCESS STATE (โทนเขียว Sage) ---
             center_x, center_y = width // 2, height // 2
-            
-            # กล่องข้อความ Success ตรงกลาง (Glassmorphism)
             box_w, box_h = 500, 150
             bx1, by1 = center_x - box_w//2, center_y - box_h//2
             bx2, by2 = center_x + box_w//2, center_y + box_h//2
             
-            overlay_success = frame.copy()
-            # ใช้สีเขียว Sage เป็นพื้นหลังแบบจางๆ
-            cv2.rectangle(overlay_success, (bx1, by1), (bx2, by2), COLOR_SAGE_GREEN, -1)
-            cv2.addWeighted(overlay_success, 0.85, frame, 0.15, 0, frame)
-            
-            # กรอบขาวรอบกล่อง
+            cv2.rectangle(frame, (bx1, by1), (bx2, by2), COLOR_SAGE_GREEN, -1)
             cv2.rectangle(frame, (bx1, by1), (bx2, by2), COLOR_WHITE, 2)
             
-            # ข้อความ
             msg = "VERIFIED"
             ts = cv2.getTextSize(msg, cv2.FONT_HERSHEY_SIMPLEX, 1.5, 3)[0]
             cv2.putText(frame, msg, (center_x - ts[0]//2, center_y + 10), cv2.FONT_HERSHEY_SIMPLEX, 1.5, COLOR_WHITE, 3)
             
         else:
-            # --- SCANNING STATE ---
             for (top, right, bottom, left), name in zip(face_locations, face_names):
                 top *= 4; right *= 4; bottom *= 4; left *= 4
+                color = COLOR_WHITE if name != "Unknown" else COLOR_ALERT
                 
-                color = COLOR_WHITE # ปกติสีขาว
-                if name == "Unknown":
-                    color = COLOR_ALERT # ไม่รู้จักเป็นสีแดงอ่อน
-                
-                # วาดกรอบหน้า (มุมมนจำลอง - ใช้เส้นสั้นๆ ที่มุม)
-                line_len = 30
-                th = 3
-                # มุมบนซ้าย
-                cv2.line(frame, (left, top), (left + line_len, top), color, th)
-                cv2.line(frame, (left, top), (left, top + line_len), color, th)
-                # มุมบนขวา
-                cv2.line(frame, (right, top), (right - line_len, top), color, th)
-                cv2.line(frame, (right, top), (right, top + line_len), color, th)
-                # มุมล่างซ้าย
-                cv2.line(frame, (left, bottom), (left + line_len, bottom), color, th)
-                cv2.line(frame, (left, bottom), (left, bottom - line_len), color, th)
-                # มุมล่างขวา
-                cv2.line(frame, (right, bottom), (right - line_len, bottom), color, th)
-                cv2.line(frame, (right, bottom), (right, bottom - line_len), color, th)
+                cv2.rectangle(frame, (left, top), (right, bottom), color, 2)
 
-                # --- Progress Bar (แถบโหลดสีเขียว Sage) ---
                 if self.hold_start_time is not None and name != "Unknown":
                     elapsed = time.time() - self.hold_start_time
                     progress = min(elapsed / self.hold_seconds, 1.0)
                     
-                    # วาดพื้นหลังแถบ (สีเทาจาง)
-                    bar_h = 8
                     bar_y = bottom + 20
-                    cv2.rectangle(frame, (left, bar_y), (right, bar_y + bar_h), (100,100,100), -1)
-                    
-                    # วาดเนื้อแถบ (สีเขียว Sage)
+                    cv2.rectangle(frame, (left, bar_y), (right, bar_y + 8), (100,100,100), -1)
                     fill_w = int((right - left) * progress)
                     if fill_w > 0:
-                        cv2.rectangle(frame, (left, bar_y), (left + fill_w, bar_y + bar_h), COLOR_SAGE_GREEN, -1)
-                    
-                    # ข้อความกำลังตรวจสอบ
-                    cv2.putText(frame, "HOLD STILL...", (left, bar_y + 30), cv2.FONT_HERSHEY_SIMPLEX, 0.6, COLOR_SAGE_GREEN, 1)
+                        cv2.rectangle(frame, (left, bar_y), (left + fill_w, bar_y + 8), COLOR_SAGE_GREEN, -1)
 
     def _update_hold_state(self, recognized_this_frame: bool):
         if recognized_this_frame:
@@ -241,9 +264,13 @@ class FaceVerifier:
                 if elapsed >= self.hold_seconds and not self.verified:
                     self.verified = True
                     print("✅ สแกนผ่านแล้ว")
-                    ok = self.send_log_to_sheet(note="Face verified from camera")
-                    if ok:
-                        self.send_command_to_esp32("f")
+                    
+                    # 🚀 แก้ไข 1: สั่งจ่ายยาทันที (Priority สูงสุด ไม่ต้องรอเน็ต)
+                    self.send_command_to_esp32("f")
+                    
+                    # ☁️ แก้ไข 2: ส่ง Log ไปทำเบื้องหลัง (Background Thread)
+                    # ถ้าไม่มีเน็ต มันจะเก็บลงไฟล์ให้อัตโนมัติ
+                    self.send_log_to_sheet(note="Face verified from camera")
         else:
             self.hold_start_time = None
 
@@ -263,14 +290,12 @@ class FaceVerifier:
 
                 locs, names, rec = self._process_frame(frame)
                 self._update_hold_state(rec)
-                
-                # เรียกใช้ UI ธีม Tuberbox
                 self._draw_tuberbox_ui(frame, locs, names)
 
                 cv2.imshow(window_name, frame)
 
                 if self.verified:
-                    cv2.waitKey(2000)
+                    cv2.waitKey(2000) # โชว์หน้า Verified 2 วินาทีแล้วปิด
                     break
                 if cv2.waitKey(1) & 0xFF == ord('q'):
                     break
@@ -278,12 +303,12 @@ class FaceVerifier:
             self.close_camera()
 
 if __name__ == "__main__":
-    WEBAPP_URL = "https://script.google.com/macros/s/AKfycbypFJrwXJVcEPNyveBYXplgGsO2CxZLnWvaHQgKbVLbThRwd7vbksIqAItmVtRLD-4v/exec"
+    WEBAPP_URL = "YOUR_GOOGLE_SCRIPT_URL_HERE"
     verifier = FaceVerifier(
-        known_image_path="patient.jpeg",
-        known_name="patient",
+        known_image_path="paper.jpeg",
+        known_name="Paper",
         webapp_url=WEBAPP_URL,
         sheet_name="Patient",
-        face_id="patient"
+        face_id="user_001"
     )
     verifier.run()
