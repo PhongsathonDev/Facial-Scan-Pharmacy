@@ -4,15 +4,15 @@
 # 📢 LINE NOTIFY SETTINGS
 # =========================================
 # ใส่ Token ที่ได้จาก https://notify-bot.line.me/my/
-LINE_ACCESS_TOKEN = "YOUR_LINE_TOKEN_HERE" 
+LINE_ACCESS_TOKEN = "90PR4QmENVZ8HgX6H9Ee7lrByaFndu4+VBjrC3iUJN0kmXQ7zma/srxGsx4gCQ3bdwPaqS38zcVjtuANVYZoqAgey4AhockHFJ+OK/3K6aGnEa11RuGpM51rDltAT8lXe69f6wbkatpra28B7WLdFAdB04t89/1O/w1cDnyilFU=" 
 # User ID ที่ต้องการส่งข้อความหา (ดูจาก Line Developers หรือ Log)
-LINE_USER_ID = "YOUR_USER_ID_HERE"
+LINE_USER_ID = "Uaa30a62f505cfb7a3e546ed644e4755f"
 
 # =========================================
 # ☁️ GOOGLE SHEETS / WEB APP SETTINGS
 # =========================================
 # URL ของ Google Apps Script Web App (Deploy as Web App)
-WEBAPP_URL = "https://script.google.com/macros/s/AKfycbypFJrwXJVcEPNyveBYXplgGsO2CxZLnWvaHQgKbVLbThRwd7vbksIqAItmVtRLD-4v/exec"
+WEBAPP_URL = "https://script.google.com/macros/s/AKfycbx74AfjHok8Th030cZCMujeEzXAd7dXAqKCcH7IEoguFynnKub1sDyzKUKTdmUkN3Oz/exec"
 SHEET_NAME = "Patient"      # ชื่อชีตที่จะบันทึกข้อมูล
 OFFLINE_LOG_FILE = "offline_logs.json" # ไฟล์เก็บข้อมูลชั่วคราวเมื่อเน็ตหลุด
 
