@@ -174,7 +174,7 @@ class FullScreenImageApp:
         
         # 1. ซ่อนหน้าต่างหลักชั่วคราว เพื่อให้หน้ากล้อง OpenCV ขึ้นมาแทน
         
-        self.root.withdraw()
+        # self.root.withdraw()
         
         try:
             # 2. เรียกฟังก์ชันจากไฟล์ register_face.py
