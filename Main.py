@@ -7,7 +7,7 @@ import requests, json, threading
 from Facescan import FaceVerifier
 from register_face import register_new_face 
 from Manual import ManualUI
-import config  # <--- นำเข้าไฟล์ตั้งค่าที่เราสร้างใหม่
+import config
 
 class FullScreenImageApp:
     def __init__(self, root):
