@@ -2,6 +2,7 @@ import tkinter as tk
 from PIL import Image, ImageTk
 from datetime import datetime
 import requests, json, threading
+import importlib  # ✅ เพิ่มตรงนี้เพื่อใช้สำหรับ Reload Config
 
 # Import คลาสต่างๆ
 from Facescan import FaceVerifier
@@ -157,18 +158,51 @@ class FullScreenImageApp:
         if self.is_scanning: return
         self.is_scanning = True
         print("⚙️ เข้าสู่โหมดลงทะเบียนใบหน้า...")
-        try:
-            # เรียกฟังก์ชันลงทะเบียน (อาจจะต้องปรับให้รับค่าจาก config ในอนาคตถ้าต้องการ)
-            self.root.after(10, register_new_face)
-            print("🔄 อัปเดตข้อมูลใบหน้า...")
-            # โหลดใบหน้าใหม่เข้าระบบ
-            self.verifier.known_face_encodings, self.verifier.known_face_names = self.verifier._load_known_faces()
-        except Exception as e:
-            print(f"❌ Error Register: {e}")
-        self.root.deiconify()
-        self.root.attributes("-fullscreen", True)
-        self.root.focus_force()
-        self.is_scanning = False
+
+        def process_registration():
+            try:
+                # 1. เรียกฟังก์ชันลงทะเบียน (จะหยุดรอจนกว่าจะปิดหน้าต่างลงทะเบียน)
+                register_new_face()
+                
+                print("🔄 กำลังอัปเดตการตั้งค่าใหม่...")
+                
+                # 2. ✅ Reload config เพื่อดึงค่า Sheet Name ล่าสุดที่เพิ่งแก้ไป
+                importlib.reload(config)
+                print(f"✅ โหลดค่า Config ใหม่: Sheet -> {config.SHEET_NAME}, Name -> {config.KNOWN_NAME}")
+
+                # 3. ปิด Serial Port ตัวเก่าก่อน (ถ้ามี) เพื่อป้องกัน Error
+                if hasattr(self.verifier, 'ser') and self.verifier.ser:
+                    try:
+                        self.verifier.ser.close()
+                    except:
+                        pass
+
+                # 4. สร้างตัว verifier ใหม่ด้วยค่า config ที่อัปเดตแล้ว
+                self.verifier = FaceVerifier(
+                    known_image_path=config.KNOWN_IMAGE_PATH,
+                    known_name=config.KNOWN_NAME,
+                    tolerance=config.TOLERANCE,
+                    hold_seconds=config.HOLD_SECONDS,
+                    camera_index=config.CAMERA_INDEX,
+                    webapp_url=config.WEBAPP_URL,
+                    sheet_name=config.SHEET_NAME,   # <--- ค่าใหม่จะถูกใช้ตรงนี้
+                    face_id=config.FACE_ID,
+                    serial_port=config.SERIAL_PORT,
+                    serial_baudrate=config.SERIAL_BAUDRATE
+                )
+                print("✅ ระบบพร้อมใช้งานสำหรับผู้ป่วยคนใหม่แล้ว!")
+
+            except Exception as e:
+                print(f"❌ เกิดข้อผิดพลาดในการอัปเดต: {e}")
+            
+            # คืนค่าหน้าจอ Main กลับมา
+            self.root.deiconify()
+            self.root.attributes("-fullscreen", True)
+            self.root.focus_force()
+            self.is_scanning = False
+
+        # เรียกใช้ฟังก์ชันผ่าน after เพื่อไม่ให้ UI ค้าง
+        self.root.after(10, process_registration)
 
     def increment_eatday(self):
         self.eat_days += 1
