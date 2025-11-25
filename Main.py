@@ -6,7 +6,8 @@ import requests, json, threading
 # Import คลาสต่างๆ
 from Facescan import FaceVerifier
 from register_face import register_new_face 
-from Manual import ManualUI  # <--- Import ไฟล์ใหม่ที่เราสร้าง
+from Manual import ManualUI
+import config  # <--- นำเข้าไฟล์ตั้งค่าที่เราสร้างใหม่
 
 class FullScreenImageApp:
     def __init__(self, root):
@@ -47,24 +48,26 @@ class FullScreenImageApp:
         self.time_text_id = None
         self.is_scanning = False 
 
-        # ตั้งค่า LINE และ FaceVerifier (คงเดิม)
-        self.CHANNEL_ACCESS_TOKEN = "YOUR_LINE_TOKEN_HERE"
-        self.USER_ID = "YOUR_USER_ID_HERE"
-        self.alarm_hour = 20
-        self.alarm_minute = 0
+        # ============================
+        # ⚙️ ดึงค่าจาก config.py
+        # ============================
+        self.CHANNEL_ACCESS_TOKEN = config.LINE_ACCESS_TOKEN
+        self.USER_ID = config.LINE_USER_ID
+        self.alarm_hour = config.ALARM_HOUR
+        self.alarm_minute = config.ALARM_MINUTE
         
-        WEBAPP_URL = "https://script.google.com/macros/s/AKfycbypFJrwXJVcEPNyveBYXplgGsO2CxZLnWvaHQgKbVLbThRwd7vbksIqAItmVtRLD-4v/exec"
+        # ตั้งค่า FaceVerifier โดยใช้ค่าจาก config
         self.verifier = FaceVerifier(
-            known_image_path="patient.jpeg",
-            known_name="patient",
-            tolerance=0.5,
-            hold_seconds=2.0,
-            camera_index=0,
-            webapp_url=WEBAPP_URL,
-            sheet_name="Patient",
-            face_id="patient",
-            serial_port="/dev/ttyUSB0",
-            serial_baudrate=115200
+            known_image_path=config.KNOWN_IMAGE_PATH,
+            known_name=config.KNOWN_NAME,
+            tolerance=config.TOLERANCE,
+            hold_seconds=config.HOLD_SECONDS,
+            camera_index=config.CAMERA_INDEX,
+            webapp_url=config.WEBAPP_URL,
+            sheet_name=config.SHEET_NAME,
+            face_id=config.FACE_ID,
+            serial_port=config.SERIAL_PORT,
+            serial_baudrate=config.SERIAL_BAUDRATE
         )
 
         # สร้าง UI หน้าหลัก
@@ -78,7 +81,8 @@ class FullScreenImageApp:
     def load_main_assets(self):
         """โหลดเฉพาะรูปพื้นหลังหน้าหลัก"""
         try:
-            img = Image.open("bg.png")
+            # ใช้ path จาก config
+            img = Image.open(config.BG_IMAGE_PATH)
             img = img.resize((self.screen_width, self.screen_height))
             self.assets['bg'] = ImageTk.PhotoImage(img)
         except Exception as e:
@@ -147,15 +151,17 @@ class FullScreenImageApp:
             self.canvas.itemconfigure(item, state='normal')
 
     # ============================
-    # ฟังก์ชันการทำงานอื่นๆ (คงเดิม)
+    # ฟังก์ชันการทำงานอื่นๆ
     # ============================
     def on_register_click(self, event):
         if self.is_scanning: return
         self.is_scanning = True
         print("⚙️ เข้าสู่โหมดลงทะเบียนใบหน้า...")
         try:
+            # เรียกฟังก์ชันลงทะเบียน (อาจจะต้องปรับให้รับค่าจาก config ในอนาคตถ้าต้องการ)
             self.root.after(10, register_new_face)
             print("🔄 อัปเดตข้อมูลใบหน้า...")
+            # โหลดใบหน้าใหม่เข้าระบบ
             self.verifier.known_face_encodings, self.verifier.known_face_names = self.verifier._load_known_faces()
         except Exception as e:
             print(f"❌ Error Register: {e}")
@@ -177,11 +183,16 @@ class FullScreenImageApp:
 
     def check_alarm_time(self):
         now = datetime.now()
+        # ตรวจสอบเวลาให้ตรงกับที่ตั้งไว้ใน config
         if now.hour == self.alarm_hour and now.minute == self.alarm_minute and now.second == 0:
              threading.Thread(target=self.send_line_alert, args=("⏰ ถึงเวลาทานยาแล้วนะคะ อย่าลืมกดปุ่มและสแกนหน้านะคะ 💊",)).start()
         self.root.after(1000, self.check_alarm_time)
 
     def send_line_alert(self, message_text):
+        if not self.CHANNEL_ACCESS_TOKEN or not self.USER_ID:
+            print("⚠️ LINE Token หรือ User ID ไม่ถูกต้อง")
+            return
+
         headers = { "Content-Type": "application/json", "Authorization": f"Bearer {self.CHANNEL_ACCESS_TOKEN}" }
         data = { "to": self.USER_ID, "messages": [{"type": "text", "text": message_text}] }
         try:

@@ -7,20 +7,22 @@ import serial
 import threading
 import json
 import os
+import config  # <--- นำเข้าไฟล์ตั้งค่า
 
 class FaceVerifier:
     def __init__(
         self,
-        known_image_path: str,
-        known_name: str = "User",
-        tolerance: float = 0.45,
-        hold_seconds: float = 3.0,
-        camera_index: int = 0,
-        webapp_url: str | None = None,
-        sheet_name: str = "sheet1",
-        face_id: str = "user_001",
-        serial_port: str | None = "/dev/ttyUSB0",
-        serial_baudrate: int = 115200
+        # ปรับ Default Parameter ให้ใช้ค่าจาก config
+        known_image_path: str = config.KNOWN_IMAGE_PATH,
+        known_name: str = config.KNOWN_NAME,
+        tolerance: float = config.TOLERANCE,
+        hold_seconds: float = config.HOLD_SECONDS,
+        camera_index: int = config.CAMERA_INDEX,
+        webapp_url: str | None = config.WEBAPP_URL,
+        sheet_name: str = config.SHEET_NAME,
+        face_id: str = config.FACE_ID,
+        serial_port: str | None = config.SERIAL_PORT,
+        serial_baudrate: int = config.SERIAL_BAUDRATE
     ):
         self.known_image_path = known_image_path
         self.known_name = known_name
@@ -32,8 +34,8 @@ class FaceVerifier:
         self.sheet_name = sheet_name
         self.face_id = face_id
         
-        # ชื่อไฟล์สำหรับเก็บข้อมูลตอนไม่มีเน็ต
-        self.offline_file = "offline_logs.json"
+        # ใช้ชื่อไฟล์ Offline Log จาก config
+        self.offline_file = config.OFFLINE_LOG_FILE
 
         # ====== Serial ไปยัง ESP32 ======
         self.serial_port = serial_port
@@ -176,8 +178,9 @@ class FaceVerifier:
 
     def open_camera(self):
         self.video_capture = cv2.VideoCapture(self.camera_index)
-        self.video_capture.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
-        self.video_capture.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
+        # ตั้งค่าความละเอียดจาก config
+        self.video_capture.set(cv2.CAP_PROP_FRAME_WIDTH, config.FRAME_WIDTH)
+        self.video_capture.set(cv2.CAP_PROP_FRAME_HEIGHT, config.FRAME_HEIGHT)
         if not self.video_capture.isOpened():
             raise RuntimeError("Cannot open camera")
 
@@ -265,11 +268,10 @@ class FaceVerifier:
                     self.verified = True
                     print("✅ สแกนผ่านแล้ว")
                     
-                    # 🚀 แก้ไข 1: สั่งจ่ายยาทันที (Priority สูงสุด ไม่ต้องรอเน็ต)
+                    # 🚀 สั่งจ่ายยาทันที
                     self.send_command_to_esp32("f")
                     
-                    # ☁️ แก้ไข 2: ส่ง Log ไปทำเบื้องหลัง (Background Thread)
-                    # ถ้าไม่มีเน็ต มันจะเก็บลงไฟล์ให้อัตโนมัติ
+                    # ☁️ ส่ง Log ไปทำเบื้องหลัง
                     self.send_log_to_sheet(note="Face verified from camera")
         else:
             self.hold_start_time = None
@@ -303,12 +305,6 @@ class FaceVerifier:
             self.close_camera()
 
 if __name__ == "__main__":
-    WEBAPP_URL = "https://script.google.com/macros/s/AKfycbypFJrwXJVcEPNyveBYXplgGsO2CxZLnWvaHQgKbVLbThRwd7vbksIqAItmVtRLD-4v/exec"
-    verifier = FaceVerifier(
-        known_image_path="patient.jpeg",
-        known_name="patient",
-        webapp_url=WEBAPP_URL,
-        sheet_name="Patient",
-        face_id="patient"
-    )
+    # เรียกใช้โดยไม่ต้องใส่พารามิเตอร์ (เพราะจะดึงจาก config เอง)
+    verifier = FaceVerifier()
     verifier.run()
