@@ -3,7 +3,6 @@ import face_recognition
 import mediapipe as mp
 import time
 import os
-import json
 
 def register_new_face(filename="patient.jpeg"):
     # --- ตั้งค่า MediaPipe ---
@@ -148,47 +147,10 @@ def register_new_face(filename="patient.jpeg"):
                     cv2.imshow(window_name, display_frame)
                     cv2.waitKey(100)
                     
-                    # --- [New] Sheet Selection Loop ---
-                    selected_sheet = None
-                    while True:
-                        selection_frame = frame.copy()
-                        # Darken background
-                        cv2.rectangle(selection_frame, (0, 0), (width, height), (0, 0, 0), -1)
-                        cv2.addWeighted(selection_frame, 0.7, frame, 0.3, 0, selection_frame)
-
-                        # Draw Menu
-                        cv2.putText(selection_frame, "Select Sheet to Save:", (width//2 - 250, height//2 - 100), 
-                                    cv2.FONT_HERSHEY_SIMPLEX, 1.5, (255, 255, 255), 3)
-                        cv2.putText(selection_frame, "[1] Patient1", (width//2 - 150, height//2), 
-                                    cv2.FONT_HERSHEY_SIMPLEX, 1.2, (0, 255, 255), 2)
-                        cv2.putText(selection_frame, "[2] Patient2", (width//2 - 150, height//2 + 60), 
-                                    cv2.FONT_HERSHEY_SIMPLEX, 1.2, (0, 255, 255), 2)
-                        
-                        cv2.imshow(window_name, selection_frame)
-                        
-                        key = cv2.waitKey(0) & 0xFF
-                        if key == ord('1'):
-                            selected_sheet = "Patient1"
-                            break
-                        elif key == ord('2'):
-                            selected_sheet = "Patient2"
-                            break
-                    
-                    # Save Config
-                    if selected_sheet:
-                        config_data = {"sheet_name": selected_sheet}
-                        try:
-                            with open("face_config.json", "w", encoding="utf-8") as f:
-                                json.dump(config_data, f, indent=4)
-                            print(f"✅ Saved preference: {selected_sheet}")
-                        except Exception as e:
-                            print(f"❌ Error saving config: {e}")
-
-                        cv2.putText(display_frame, f"Selected: {selected_sheet}", (width//2 - 200, height//2 + 100), 
-                                    cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
-                        cv2.imshow(window_name, display_frame)
-                        cv2.waitKey(1500)
-
+                    cv2.putText(display_frame, "SAVED!", (width//2 - 150, height//2), 
+                                cv2.FONT_HERSHEY_SIMPLEX, 3, (0, 255, 0), 5)
+                    cv2.imshow(window_name, display_frame)
+                    cv2.waitKey(2000)
                     break 
                 else:
                     print("⚠️ ไม่พบใบหน้า! ลองใหม่อีกครั้ง")

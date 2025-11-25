@@ -32,17 +32,6 @@ class FaceVerifier:
         self.sheet_name = sheet_name
         self.face_id = face_id
         
-        # --- [New] Load Config Override ---
-        if os.path.exists("face_config.json"):
-            try:
-                with open("face_config.json", "r", encoding="utf-8") as f:
-                    config = json.load(f)
-                    if "sheet_name" in config:
-                        self.sheet_name = config["sheet_name"]
-                        print(f"📄 Loaded sheet preference: {self.sheet_name}")
-            except Exception as e:
-                print(f"⚠️ Error loading config: {e}")
-        
         # ชื่อไฟล์สำหรับเก็บข้อมูลตอนไม่มีเน็ต
         self.offline_file = "offline_logs.json"
 
