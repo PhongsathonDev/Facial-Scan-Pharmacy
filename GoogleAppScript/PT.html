@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ติดตามข้อมูลผู้ป่วยวัณโรค | Tuberbox</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <style>
+        :root {
+            --primary: #10b981;
+            /* Emerald 500 */
+            --primary-dark: #047857;
+            /* Emerald 700 */
+            --bg-gradient-1: #d1fae5;
+            --bg-gradient-2: #ecfdf5;
+        }
+
+        body {
+            font-family: 'Prompt', sans-serif;
+            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+            color: #1f2937;
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Background Animation (Abstract Blobs) แทน Bubble เดิม */
+        .blob {
+            position: fixed;
+            filter: blur(80px);
+            z-index: -1;
+            opacity: 0.6;
+            animation: float 10s infinite alternate;
+        }
+
+        .blob-1 {
+            top: -10%;
+            left: -10%;
+            width: 500px;
+            height: 500px;
+            background: #6ee7b7;
+            animation-delay: 0s;
+            border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%;
+        }
+
+        .blob-2 {
+            bottom: -10%;
+            right: -10%;
+            width: 400px;
+            height: 400px;
+            background: #34d399;
+            animation-delay: 2s;
+            border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
+        }
+
+        .blob-3 {
+            top: 40%;
+            left: 40%;
+            width: 300px;
+            height: 300px;
+            background: #a7f3d0;
+            animation-delay: 4s;
+            border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translate(0, 0) rotate(0deg);
+            }
+
+            100% {
+                transform: translate(30px, 50px) rotate(10deg);
+            }
+        }
+
+        /* Glass Effect Cards */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.1);
+            border-radius: 24px;
+        }
+
+        /* Custom Scrollbar for Table */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background-color: #a7f3d0;
+            border-radius: 20px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background-color: #34d399;
+        }
+
+        /* Animations */
+        .fade-in-up {
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Table Styling */
+        .modern-table th {
+            background-color: rgba(16, 185, 129, 0.1);
+            color: var(--primary-dark);
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 0.05em;
+        }
+
+        .modern-table tr {
+            transition: all 0.2s;
+            border-bottom: 1px solid #f0fdf4;
+        }
+
+        .modern-table tr:hover {
+            background-color: rgba(16, 185, 129, 0.05);
+            transform: scale(1.01);
+        }
+
+        /* Buttons */
+        .btn-gradient {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+        }
+
+        .btn-gradient:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+        }
+
+        .btn-gradient:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: var(--primary-dark);
+            border: 1px solid #d1fae5;
+            transition: all 0.3s ease;
+        }
+
+        .btn-secondary:hover {
+            background: #f0fdf4;
+            border-color: #10b981;
+        }
+
+        /* Modal */
+        .modal-enter {
+            opacity: 0;
+            transform: scale(0.95);
+        }
+
+        .modal-enter-active {
+            opacity: 1;
+            transform: scale(1);
+            transition: all 0.3s ease-out;
+        }
+
+        .modal-exit {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .modal-exit-active {
+            opacity: 0;
+            transform: scale(0.95);
+            transition: all 0.2s ease-in;
+        }
+
+        /* Input Fields */
+        .input-field {
+            background-color: #f9fafb;
+            border: 1px solid #e5e7eb;
+            transition: all 0.3s;
+        }
+
+        .input-field:focus {
+            background-color: white;
+            border-color: #10b981;
+            box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1);
+            outline: none;
+        }
+    </style>
+</head>
+
+<body class="antialiased">
+
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+
+    <nav
+        class="fixed top-0 w-full z-40 bg-white/80 backdrop-blur-md border-b border-green-100 shadow-sm transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-20">
+                <div class="flex items-center gap-3">
+                    <div
+                        class="w-10 h-10 rounded-xl bg-gradient-to-tr from-green-400 to-emerald-600 flex items-center justify-center text-white shadow-lg">
+                        <i class="ph ph-pill text-2xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-bold text-gray-800 tracking-tight">Tuberbox Monitor</h1>
+                        <p class="text-xs text-green-600 font-medium">ระบบติดตามผู้ป่วยวัณโรค</p>
+                    </div>
+                </div>
+                <button id="logoutBtn"
+                    class="group flex items-center gap-2 px-5 py-2.5 rounded-full bg-white border border-green-200 text-green-700 font-medium hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-all shadow-sm">
+                    <span>ออกสู่หน้าหลัก</span>
+                    <i class="ph ph-sign-out text-lg group-hover:translate-x-1 transition-transform"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="pt-32 pb-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+
+            <div class="lg:col-span-5 fade-in-up" style="animation-delay: 0.1s;">
+                <div class="glass-card p-8 h-full relative overflow-hidden group">
+
+                    <div
+                        class="absolute top-0 right-0 -mt-8 -mr-8 w-32 h-32 bg-green-100 rounded-full opacity-50 transition-transform group-hover:scale-110">
+                    </div>
+
+                    <div class="relative z-10">
+                        <div class="flex justify-between items-start mb-6">
+                            <div
+                                class="flex items-center gap-2 text-green-700 bg-green-50 px-3 py-1 rounded-lg border border-green-100">
+                                <i class="ph-fill ph-user-circle text-lg"></i>
+                                <span class="text-sm font-bold">ข้อมูลส่วนตัว</span>
+                            </div>
+                            <button onclick="openEditModal()"
+                                class="w-10 h-10 rounded-full bg-white border border-gray-200 text-gray-500 hover:text-green-600 hover:border-green-300 hover:shadow-md flex items-center justify-center transition-all"
+                                title="แก้ไขข้อมูล">
+                                <i class="ph-bold ph-pencil-simple"></i>
+                            </button>
+                        </div>
+
+                        <div class="flex flex-col items-center text-center mb-8">
+                            <div
+                                class="w-28 h-28 rounded-full bg-gradient-to-b from-green-100 to-white border-4 border-white shadow-xl flex items-center justify-center mb-4 text-green-600">
+                                <i class="ph-duotone ph-user text-6xl opacity-80"></i>
+                            </div>
+                            <h2 id="pName" class="text-2xl font-bold text-gray-800 mb-1">...</h2>
+                            <p
+                                class="text-sm text-gray-500 font-medium bg-white/60 px-3 py-1 rounded-full border border-gray-100 inline-block shadow-sm">
+                                รหัส: <span id="pCode" class="text-green-600 font-bold">...</span>
+                            </p>
+                        </div>
+
+                        <div class="space-y-4">
+                            <div
+                                class="flex items-center p-3 rounded-xl bg-white/50 border border-white hover:bg-white transition-colors">
+                                <div
+                                    class="w-10 h-10 rounded-full bg-blue-50 text-blue-500 flex items-center justify-center mr-4">
+                                    <i class="ph-duotone ph-cake text-xl"></i>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-gray-400 uppercase font-semibold">อายุ</p>
+                                    <p id="pAge" class="font-medium text-gray-700">-</p>
+                                </div>
+                            </div>
+
+                            <div
+                                class="flex items-center p-3 rounded-xl bg-white/50 border border-white hover:bg-white transition-colors">
+                                <div
+                                    class="w-10 h-10 rounded-full bg-pink-50 text-pink-500 flex items-center justify-center mr-4">
+                                    <i class="ph-duotone ph-gender-intersex text-xl"></i>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-gray-400 uppercase font-semibold">เพศ</p>
+                                    <p id="pGender" class="font-medium text-gray-700">-</p>
+                                </div>
+                            </div>
+
+                            <div
+                                class="flex items-center p-3 rounded-xl bg-white/50 border border-white hover:bg-white transition-colors">
+                                <div
+                                    class="w-10 h-10 rounded-full bg-purple-50 text-purple-500 flex items-center justify-center mr-4">
+                                    <i class="ph-duotone ph-phone text-xl"></i>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-gray-400 uppercase font-semibold">เบอร์โทรศัพท์</p>
+                                    <p id="pPhone" class="font-medium text-gray-700">-</p>
+                                </div>
+                            </div>
+
+                            <div
+                                class="flex items-center p-3 rounded-xl bg-white/50 border border-white hover:bg-white transition-colors">
+                                <div
+                                    class="w-10 h-10 rounded-full bg-orange-50 text-orange-500 flex items-center justify-center mr-4">
+                                    <i class="ph-duotone ph-map-pin text-xl"></i>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-gray-400 uppercase font-semibold">ที่อยู่</p>
+                                    <p id="pAddress" class="font-medium text-gray-700 text-sm line-clamp-2">-</p>
+                                </div>
+                            </div>
+
+                            <div class="mt-6 pt-4 border-t border-green-100">
+                                <div class="flex items-center gap-3">
+                                    <div
+                                        class="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600">
+                                        <i class="ph-fill ph-stethoscope text-2xl"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-xs text-gray-500">แพทย์ผู้ดูแล</p>
+                                        <p id="HName" class="text-lg font-bold text-emerald-700 leading-tight">-</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <div class="lg:col-span-7 fade-in-up" style="animation-delay: 0.3s;">
+                <div class="glass-card p-8 h-full flex flex-col">
+
+                    <div class="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
+                        <div class="flex items-center gap-3">
+                            <div class="p-2 bg-green-100 rounded-lg text-green-600">
+                                <i class="ph-duotone ph-chart-line-up text-2xl"></i>
+                            </div>
+                            <h2 class="text-xl font-bold text-gray-800">ประวัติการกินยา</h2>
+                        </div>
+                        <div
+                            class="text-sm text-gray-500 bg-white px-3 py-1 rounded-full shadow-sm border border-gray-100">
+                            <i class="ph-fill ph-clock text-green-500 mr-1"></i> อัปเดตล่าสุด: <span
+                                id="lastUpdate">Real-time</span>
+                        </div>
+                    </div>
+
+                    <div class="flex-grow overflow-hidden rounded-xl border border-green-100 bg-white/40 shadow-inner">
+                        <div class="overflow-x-auto custom-scrollbar h-full">
+                            <table class="w-full text-left modern-table">
+                                <thead>
+                                    <tr>
+                                        <th class="p-4 rounded-tl-xl">วันที่บันทึก</th>
+                                        <th class="p-4 rounded-tr-xl">เวลาที่กินยา</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tableBody" class="text-gray-600">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div id="loading" class="text-center py-6 text-green-600 font-medium animate-pulse hidden">
+                        <i class="ph-duotone ph-spinner-gap animate-spin text-xl mr-2"></i> กำลังโหลดข้อมูล...
+                    </div>
+
+                    <div class="mt-6 flex justify-between items-center bg-white/50 p-2 rounded-xl border border-white">
+                        <button id="prevBtn"
+                            class="btn-secondary px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2">
+                            <i class="ph-bold ph-caret-left"></i> ก่อนหน้า
+                        </button>
+                        <span id="pageInfo"
+                            class="text-sm font-semibold text-green-800 bg-green-100 px-3 py-1 rounded-md"></span>
+                        <button id="nextBtn"
+                            class="btn-secondary px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2">
+                            ถัดไป <i class="ph-bold ph-caret-right"></i>
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div id="editModal"
+        class="fixed inset-0 z-50 flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300">
+        <div class="absolute inset-0 bg-gray-900/40 backdrop-blur-sm" onclick="closeEditModal()"></div>
+
+        <div class="bg-white w-full max-w-2xl mx-4 rounded-3xl shadow-2xl z-10 transform scale-95 transition-transform duration-300 flex flex-col max-h-[90vh]"
+            id="modalContent">
+
+            <div
+                class="px-8 py-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50 rounded-t-3xl">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-green-100 text-green-600 flex items-center justify-center">
+                        <i class="ph-fill ph-user-gear text-xl"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-gray-800">แก้ไขข้อมูลผู้ป่วย</h3>
+                        <p class="text-xs text-gray-500">กรุณากรอกข้อมูลให้ครบถ้วน</p>
+                    </div>
+                </div>
+                <button onclick="closeEditModal()"
+                    class="text-gray-400 hover:text-red-500 hover:bg-red-50 p-2 rounded-full transition-colors">
+                    <i class="ph-bold ph-x text-xl"></i>
+                </button>
+            </div>
+
+            <div class="p-8 overflow-y-auto custom-scrollbar">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">ชื่อ-นามสกุล <span
+                                class="text-red-500">*</span></label>
+                        <div class="relative">
+                            <i class="ph-duotone ph-user absolute left-3 top-3 text-gray-400 text-lg"></i>
+                            <input type="text" id="editName"
+                                class="input-field w-full pl-10 pr-4 py-2.5 rounded-xl text-gray-700"
+                                placeholder="ชื่อ นามสกุล">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">รหัสประจำตัว <span
+                                class="text-red-500">*</span></label>
+                        <div class="relative">
+                            <i
+                                class="ph-duotone ph-identification-card absolute left-3 top-3 text-gray-400 text-lg"></i>
+                            <input type="text" id="editCode"
+                                class="input-field w-full pl-10 pr-4 py-2.5 rounded-xl text-gray-700">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">เพศ</label>
+                        <div class="relative">
+                            <i class="ph-duotone ph-gender-intersex absolute left-3 top-3 text-gray-400 text-lg"></i>
+                            <select id="editGender"
+                                class="input-field w-full pl-10 pr-4 py-2.5 rounded-xl text-gray-700 appearance-none">
+                                <option value="ชาย">ชาย</option>
+                                <option value="หญิง">หญิง</option>
+                                <option value="-">-</option>
+                            </select>
+                            <i
+                                class="ph-bold ph-caret-down absolute right-3 top-3.5 text-gray-400 pointer-events-none"></i>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">อายุ (ปี)</label>
+                        <input type="number" id="editAge"
+                            class="input-field w-full px-4 py-2.5 rounded-xl text-gray-700">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">เบอร์โทรศัพท์</label>
+                        <div class="relative">
+                            <i class="ph-duotone ph-phone absolute left-3 top-3 text-gray-400 text-lg"></i>
+                            <input type="text" id="editPhone"
+                                class="input-field w-full pl-10 pr-4 py-2.5 rounded-xl text-gray-700">
+                        </div>
+                    </div>
+
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">แพทย์ผู้ดูแล</label>
+                        <div class="relative">
+                            <i class="ph-duotone ph-stethoscope absolute left-3 top-3 text-gray-400 text-lg"></i>
+                            <input type="text" id="editDoctor"
+                                class="input-field w-full pl-10 pr-4 py-2.5 rounded-xl text-gray-700">
+                        </div>
+                    </div>
+
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">ที่อยู่</label>
+                        <textarea id="editAddress" rows="3"
+                            class="input-field w-full px-4 py-3 rounded-xl text-gray-700 resize-none"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div class="px-8 py-5 border-t border-gray-100 bg-gray-50/50 rounded-b-3xl flex justify-end gap-3">
+                <button onclick="closeEditModal()"
+                    class="px-6 py-2.5 rounded-xl text-gray-600 font-medium hover:bg-gray-200 transition-colors">ยกเลิก</button>
+                <button onclick="submitEdit()" id="btnSaveEdit"
+                    class="btn-gradient px-8 py-2.5 rounded-xl font-semibold flex items-center gap-2">
+                    <i class="ph-bold ph-floppy-disk"></i> บันทึกข้อมูล
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        //  KEEPING ALL ORIGINAL LOGIC INTACT
+        // ==========================================
+
+        var currentPatientId = <?= (typeof patientId !== 'undefined') ? patientId : 0 ?>;
+        let allData = [];
+        let currentPage = 1;
+        const rowsPerPage = 6;
+        let currentPatientData = {};
+
+        function fetchData() {
+            document.getElementById('loading').classList.remove('hidden'); // Show loader
+            if (typeof google !== 'undefined' && google.script && google.script.run) {
+                google.script.run
+                    .withSuccessHandler(showPatientData)
+                    .withFailureHandler((err) => console.error(err))
+                    .getPatientData(currentPatientId);
+            }
+        }
+
+        function showPatientData(data) {
+            document.getElementById('loading').classList.add('hidden'); // Hide loader
+            const tbody = document.getElementById('tableBody');
+
+            if (!data || data.length === 0 || data[0].error) {
+                allData = [];
+                currentPage = 1;
+                // Stylized Empty State
+                tbody.innerHTML = `
+            <tr>
+                <td colspan="2" class="py-8 text-center">
+                    <div class="flex flex-col items-center text-gray-400">
+                        <i class="ph-duotone ph-clipboard-text text-4xl mb-2"></i>
+                        <span class="text-sm font-medium">${data?.[0]?.error || 'ยังไม่มีข้อมูลการกินยา'}</span>
+                    </div>
+                </td>
+            </tr>`;
+                document.getElementById('pageInfo').textContent = '-';
+                return;
+            }
+
+            allData = data;
+            const totalPages = Math.ceil(allData.length / rowsPerPage);
+            if (currentPage > totalPages) currentPage = totalPages || 1;
+
+            renderTable();
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = "";
+
+            const start = (currentPage - 1) * rowsPerPage;
+            const end = start + rowsPerPage;
+            const pageData = allData.slice(start, end);
+
+            pageData.forEach((row, index) => {
+                const tr = document.createElement('tr');
+                // Add animation delay for table rows
+                tr.style.animation = `fadeInUp 0.3s ease-out forwards ${index * 0.05}s`;
+                tr.style.opacity = '0'; // Start invisible
+
+                tr.innerHTML = `
+          <td class="p-4 border-b border-green-50 font-medium text-gray-700">
+             <span class="bg-green-50 text-green-700 px-2 py-1 rounded text-sm">${row['วันที่'] || '-'}</span>
+          </td>
+          <td class="p-4 border-b border-green-50">
+             <div class="flex items-center gap-2">
+                <i class="ph-fill ph-clock text-green-400"></i>
+                <span>${row['เวลา'] || '-'} น.</span>
+             </div>
+          </td>
+        `;
+                tbody.appendChild(tr);
+            });
+
+            const totalPages = Math.ceil(allData.length / rowsPerPage);
+            document.getElementById('pageInfo').textContent = `หน้า ${currentPage} / ${totalPages}`;
+
+            // Update Button States
+            document.getElementById('prevBtn').disabled = currentPage === 1;
+            document.getElementById('prevBtn').classList.toggle('opacity-50', currentPage === 1);
+
+            document.getElementById('nextBtn').disabled = currentPage === totalPages;
+            document.getElementById('nextBtn').classList.toggle('opacity-50', currentPage === totalPages);
+        }
+
+        document.getElementById('prevBtn').addEventListener('click', () => {
+            if (currentPage > 1) { currentPage--; renderTable(); }
+        });
+        document.getElementById('nextBtn').addEventListener('click', () => {
+            const totalPages = Math.ceil(allData.length / rowsPerPage);
+            if (currentPage < totalPages) { currentPage++; renderTable(); }
+        });
+
+        // ============================
+        // Patient Info Logic
+        // ============================
+        function fetchPatientInfo() {
+            if (typeof google !== 'undefined' && google.script && google.script.run) {
+                google.script.run
+                    .withSuccessHandler(showPatientInfo)
+                    .getPatientInfo(currentPatientId);
+            }
+        }
+
+        function showPatientInfo(p) {
+            if (!p || p.name === 'ไม่พบข้อมูล') return;
+            currentPatientData = p;
+
+            // Add fade animation when updating
+            const elements = ['pName', 'pCode', 'pAge', 'pGender', 'pAddress', 'pPhone', 'HName'];
+            elements.forEach(id => {
+                const el = document.getElementById(id);
+                el.style.opacity = 0;
+                setTimeout(() => {
+                    if (id === 'pAge') el.textContent = p.age ? (p.age + ' ปี') : '-';
+                    else el.textContent = p[id.replace('pName', 'name').replace('pCode', 'code').replace('pGender', 'gender').replace('pAddress', 'address').replace('pPhone', 'phone').replace('HName', 'doctor')] || '-';
+                    el.style.opacity = 1;
+                    el.style.transition = 'opacity 0.3s';
+                }, 150);
+            });
+        }
+
+        // ============================
+        // Modal Logic
+        // ============================
+        function openEditModal() {
+            const modal = document.getElementById('editModal');
+            const content = document.getElementById('modalContent');
+
+            // Populate fields
+            document.getElementById('editName').value = currentPatientData.name || '';
+            document.getElementById('editCode').value = currentPatientData.code || '';
+            document.getElementById('editAge').value = (currentPatientData.age && currentPatientData.age != '-') ? currentPatientData.age : '';
+            document.getElementById('editGender').value = (currentPatientData.gender && currentPatientData.gender != '-') ? currentPatientData.gender : 'ชาย';
+            document.getElementById('editAddress').value = (currentPatientData.address && currentPatientData.address != '-') ? currentPatientData.address : '';
+            document.getElementById('editPhone').value = (currentPatientData.phone && currentPatientData.phone != '-') ? currentPatientData.phone : '';
+            document.getElementById('editDoctor').value = (currentPatientData.doctor && currentPatientData.doctor != '-') ? currentPatientData.doctor : '';
+
+            modal.classList.remove('opacity-0', 'pointer-events-none');
+            content.classList.remove('scale-95');
+            content.classList.add('scale-100');
+        }
+
+        function closeEditModal() {
+            const modal = document.getElementById('editModal');
+            const content = document.getElementById('modalContent');
+
+            modal.classList.add('opacity-0', 'pointer-events-none');
+            content.classList.remove('scale-100');
+            content.classList.add('scale-95');
+        }
+
+        function submitEdit() {
+            const updatedData = {
+                name: document.getElementById('editName').value,
+                code: document.getElementById('editCode').value,
+                age: document.getElementById('editAge').value,
+                gender: document.getElementById('editGender').value,
+                address: document.getElementById('editAddress').value,
+                phone: document.getElementById('editPhone').value,
+                doctor: document.getElementById('editDoctor').value
+            };
+
+            if (!updatedData.name || !updatedData.code) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'ข้อมูลไม่ครบ',
+                    text: 'กรุณากรอกชื่อและรหัสผู้ป่วย',
+                    confirmButtonColor: '#10b981'
+                });
+                return;
+            }
+
+            const btn = document.getElementById('btnSaveEdit');
+            const originalContent = btn.innerHTML;
+            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin"></i> กำลังบันทึก...';
+            btn.disabled = true;
+
+            google.script.run.withSuccessHandler((res) => {
+                btn.innerHTML = originalContent;
+                btn.disabled = false;
+                closeEditModal();
+
+                if (res.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'บันทึกสำเร็จ',
+                        showConfirmButton: false,
+                        timer: 1500,
+                        background: '#f0fdf4',
+                        color: '#064e3b'
+                    });
+                    fetchPatientInfo();
+                } else {
+                    Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: res.message });
+                }
+            }).updatePatientInfo(currentPatientId, updatedData);
+        }
+
+        // ============================
+        // Init & Logout
+        // ============================
+        window.onload = function () {
+            fetchPatientInfo();
+            fetchData();
+            setInterval(fetchData, 10000);
+            setInterval(fetchPatientInfo, 15000);
+        };
+
+        function logout() {
+            if (typeof google !== 'undefined' && google.script && google.script.run) {
+                google.script.run.withSuccessHandler((url) => {
+                    window.top.location.href = url + '?page=dashboard';
+                }).getWebAppUrl();
+            } else {
+                window.location.href = 'dashboard.html';
+            }
+        }
+        document.getElementById('logoutBtn').addEventListener('click', logout);
+    </script>
+</body>
+
+</html>

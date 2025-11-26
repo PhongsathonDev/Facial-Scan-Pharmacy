@@ -1,3 +1,37 @@
+// ถ้าในชีตมีคอลัมน์ชื่อ "Timestamp" จะให้ใส่เวลาให้อัตโนมัติ (วัน+เวลา)
+const TIMESTAMP_HEADER = "Timestamp";
+
+// เพิ่มหัวคอลัมน์สำหรับวันและเวลาแยกกัน
+const DATE_HEADER = "Date";   // ชื่อหัวคอลัมน์สำหรับ "วัน"
+const TIME_HEADER = "Time";   // ชื่อหัวคอลัมน์สำหรับ "เวลา"
+
+// ฟังก์ชันหา "แถวว่างตัวแรก" จากด้านบน โดยดูจากคอลัมน์หลัก (เช่น Date หรือ Timestamp)
+function getFirstEmptyRow(sheet, baseColIndex1Based) {
+  var headerRow = 1;
+  var lastRow = sheet.getLastRow();
+
+  // ถ้ายังมีแค่แถวหัวตาราง ก็เริ่มที่แถว 2 เลย
+  if (lastRow <= headerRow) {
+    return headerRow + 1;
+  }
+
+  var startRow = headerRow + 1;
+  var numRows = lastRow - headerRow;
+
+  var range = sheet.getRange(startRow, baseColIndex1Based, numRows, 1);
+  var values = range.getValues(); // [ [value], [value], ... ]
+
+  for (var i = 0; i < values.length; i++) {
+    if (!values[i][0]) {
+      // ถ้าเจอเซลล์ว่าง แถวนี้คือแถวแรกที่ว่าง
+      return startRow + i;
+    }
+  }
+
+  // ถ้าไม่มีแถวว่างตรงกลาง ให้เขียนต่อท้าย
+  return lastRow + 1;
+}
+
 function doPost(e) {
   try {
     if (!e.postData || !e.postData.contents) {
@@ -110,4 +144,5 @@ function doPost(e) {
       .createTextOutput(JSON.stringify(errorResult))
       .setMimeType(ContentService.MimeType.JSON);
   }
+
 }

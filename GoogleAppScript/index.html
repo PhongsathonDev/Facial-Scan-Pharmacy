@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="th">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -7,47 +8,56 @@
   <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-     /* ===== ส่วนอนิเมชันฟอร์ม ===== */
-  @keyframes fadeSlideUp {
-    0% {
+    /* ===== ส่วนอนิเมชันฟอร์ม ===== */
+    @keyframes fadeSlideUp {
+      0% {
+        opacity: 0;
+        transform: translateY(40px);
+      }
+
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* ให้ฟอร์มมีอนิเมชันตอนปรากฏ */
+    #loginPage form {
+      animation: fadeSlideUp 1s ease-out;
+    }
+
+    /* เพิ่มเงาเล็กน้อยเมื่อเอาเมาส์วางบนฟอร์ม */
+    #loginPage form:hover {
+      box-shadow: 0 15px 40px rgba(95, 201, 155, 0.25);
+      transform: translateY(-3px);
+      transition: all 0.3s ease;
+    }
+
+    /* เพิ่มอนิเมชันเล็กน้อยให้หัวข้อ */
+    #loginPage h2 {
+      animation: fadeSlideUp 1.2s ease-out;
+    }
+
+    /* เพิ่มการ fade-in ของช่อง input ทีละนิด */
+    #loginPage input {
       opacity: 0;
-      transform: translateY(40px);
+      animation: fadeSlideUp 1s ease forwards;
     }
-    100% {
-      opacity: 1;
-      transform: translateY(0);
+
+    #loginPage input:nth-child(2) {
+      animation-delay: 0.2s;
     }
-  }
 
-  /* ให้ฟอร์มมีอนิเมชันตอนปรากฏ */
-  #loginPage form {
-    animation: fadeSlideUp 1s ease-out;
-  }
+    #loginPage input:nth-child(3) {
+      animation-delay: 0.4s;
+    }
 
-  /* เพิ่มเงาเล็กน้อยเมื่อเอาเมาส์วางบนฟอร์ม */
-  #loginPage form:hover {
-    box-shadow: 0 15px 40px rgba(95, 201, 155, 0.25);
-    transform: translateY(-3px);
-    transition: all 0.3s ease;
-  }
+    #loginPage button {
+      opacity: 0;
+      animation: fadeSlideUp 1s ease forwards;
+      animation-delay: 0.6s;
+    }
 
-  /* เพิ่มอนิเมชันเล็กน้อยให้หัวข้อ */
-  #loginPage h2 {
-    animation: fadeSlideUp 1.2s ease-out;
-  }
-
-  /* เพิ่มการ fade-in ของช่อง input ทีละนิด */
-  #loginPage input {
-    opacity: 0;
-    animation: fadeSlideUp 1s ease forwards;
-  }
-  #loginPage input:nth-child(2) { animation-delay: 0.2s; }
-  #loginPage input:nth-child(3) { animation-delay: 0.4s; }
-  #loginPage button { 
-    opacity: 0;
-    animation: fadeSlideUp 1s ease forwards;
-    animation-delay: 0.6s;
-  }
     body {
       font-family: 'Prompt', sans-serif;
       cursor: default;
@@ -68,20 +78,25 @@
 
     /* 🔹 โลโก้มุมซ้ายบน */
     .logo-top {
-       position: absolute;
-  top: 1.5rem;
-  left: 1.5rem;
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  background: #ffffff;              /* ขาวชัด ไม่โปร่ง */
-  padding: 0.8rem 1.2rem;          /* ขยายกรอบเล็กน้อย */
-  border-radius: 0.75rem;
-  border: 2px solid rgba(255, 255, 255, 0.9);  /* ขอบขาวชัดขึ้น */
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);  /* เงาเข้มขึ้น */
-  z-index: 10;     
-  border: 2px solid #7ed6a1;  /* ขอบเขียวมิ้นต์สาธารณสุข */
-box-shadow: 0 4px 15px rgba(126, 214, 161, 0.4);
+      position: absolute;
+      top: 1.5rem;
+      left: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      background: #ffffff;
+      /* ขาวชัด ไม่โปร่ง */
+      padding: 0.8rem 1.2rem;
+      /* ขยายกรอบเล็กน้อย */
+      border-radius: 0.75rem;
+      border: 2px solid rgba(255, 255, 255, 0.9);
+      /* ขอบขาวชัดขึ้น */
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
+      /* เงาเข้มขึ้น */
+      z-index: 10;
+      border: 2px solid #7ed6a1;
+      /* ขอบเขียวมิ้นต์สาธารณสุข */
+      box-shadow: 0 4px 15px rgba(126, 214, 161, 0.4);
     }
 
     .logo-top img {
@@ -92,16 +107,19 @@ box-shadow: 0 4px 15px rgba(126, 214, 161, 0.4);
 
     /* 🔹 รูปยาเป็นพื้นหลัง */
     .medicine-bg {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  opacity: 0.15; /* ความจางของภาพ (ปรับได้ 0.1–0.3) */
-  z-index: 0;
-  filter: blur(1px); /* เบลอเล็กน้อย เพิ่มความนุ่มตา */
-  pointer-events: none; /* ไม่รบกวนการคลิก */
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0.15;
+      /* ความจางของภาพ (ปรับได้ 0.1–0.3) */
+      z-index: 0;
+      filter: blur(1px);
+      /* เบลอเล็กน้อย เพิ่มความนุ่มตา */
+      pointer-events: none;
+      /* ไม่รบกวนการคลิก */
 
     }
 
@@ -111,7 +129,7 @@ box-shadow: 0 4px 15px rgba(126, 214, 161, 0.4);
       font-weight: 700;
       margin-bottom: 1rem;
       line-height: 1.3;
-      text-shadow: 2px 2px 8px rgba(0,0,0,0.1);
+      text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.1);
       position: relative;
       z-index: 1;
     }
@@ -156,7 +174,7 @@ box-shadow: 0 4px 15px rgba(126, 214, 161, 0.4);
     #loginPage input:focus {
       outline: none;
       border-color: #5fc99b;
-      box-shadow: 0 0 0 3px rgba(95,201,155,0.3);
+      box-shadow: 0 0 0 3px rgba(95, 201, 155, 0.3);
     }
 
     /* 🔹 ปุ่มเข้าสู่ระบบ */
@@ -199,8 +217,15 @@ box-shadow: 0 4px 15px rgba(126, 214, 161, 0.4);
     <!-- 🔹 ด้านซ้าย -->
     <div class="left-panel w-1/2 flex flex-col justify-center relative">
       <div class="logo-top">
-        <img src="https://snkvc.ac.th/wp-content/uploads/2024/06/%E0%B8%AA%E0%B8%B3%E0%B8%99%E0%B8%B1%E0%B8%81%E0%B8%87%E0%B8%B2%E0%B8%99%E0%B8%84%E0%B8%93%E0%B8%B0%E0%B8%81%E0%B8%A3%E0%B8%A3%E0%B8%A1%E0%B8%81%E0%B8%B2%E0%B8%A3%E0%B8%81%E0%B8%B2%E0%B8%A3%E0%B8%AD%E0%B8%B2%E0%B8%8A%E0%B8%B5%E0%B8%A7%E0%B8%A8%E0%B8%B6%E0%B8%81%E0%B8%A9%E0%B8%B2-1024x1024.png" alt="โลโก้อาชีวะ">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/f/f9/%E0%B8%95%E0%B8%A3%E0%B8%B2%E0%B8%81%E0%B8%A3%E0%B8%B0%E0%B8%97%E0%B8%A3%E0%B8%A7%E0%B8%87%E0%B8%AA%E0%B8%B2%E0%B8%98%E0%B8%B2%E0%B8%A3%E0%B8%93%E0%B8%AA%E0%B8%B8%E0%B8%82%E0%B9%83%E0%B8%AB%E0%B8%A1%E0%B9%88.png" alt="ตราโรงพยาบาล">
+        <img
+          src="https://snkvc.ac.th/wp-content/uploads/2024/06/%E0%B8%AA%E0%B8%B3%E0%B8%99%E0%B8%B1%E0%B8%81%E0%B8%87%E0%B8%B2%E0%B8%99%E0%B8%84%E0%B8%93%E0%B8%B0%E0%B8%81%E0%B8%A3%E0%B8%A3%E0%B8%A1%E0%B8%81%E0%B8%B2%E0%B8%A3%E0%B8%81%E0%B8%B2%E0%B8%A3%E0%B8%AD%E0%B8%B2%E0%B8%8A%E0%B8%B5%E0%B8%A7%E0%B8%A8%E0%B8%B6%E0%B8%81%E0%B8%A9%E0%B8%B2-1024x1024.png"
+          alt="โลโก้อาชีวะ">
+        <img
+          src="https://lh4.googleusercontent.com/proxy/FCvsp6PjKUnkhFbJJu8wKOyDzk0RdvaupGVhjcHYL0U3_A1d8t7i6m0l3IbTYrcJbGt0A10ZCaCbYCRJnhbCbUo"
+          alt="ตรา โลโก้สิ่งประดิษฐ์คนรุ่นใหม่">
+        <img
+          src="https://upload.wikimedia.org/wikipedia/commons/f/f9/%E0%B8%95%E0%B8%A3%E0%B8%B2%E0%B8%81%E0%B8%A3%E0%B8%B0%E0%B8%97%E0%B8%A3%E0%B8%A7%E0%B8%87%E0%B8%AA%E0%B8%B2%E0%B8%98%E0%B8%B2%E0%B8%A3%E0%B8%93%E0%B8%AA%E0%B8%B8%E0%B8%82%E0%B9%83%E0%B8%AB%E0%B8%A1%E0%B9%88.png"
+          alt="ตราโรงพยาบาล">
         <img src="https://www.eef.or.th/wp-content/uploads/2020/09/cropped-th-logo-eef.png" alt="ตรา กศส">
       </div>
 
@@ -229,12 +254,12 @@ box-shadow: 0 4px 15px rgba(126, 214, 161, 0.4);
     let selectedRole = 'admin';
     let webAppUrl = '';
 
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
       if (google.script && google.script.run) {
         google.script.run.withSuccessHandler(url => webAppUrl = url).getWebAppUrl();
       }
 
-      document.getElementById('loginForm').addEventListener('submit', function(e) {
+      document.getElementById('loginForm').addEventListener('submit', function (e) {
         e.preventDefault();
         const username = document.getElementById('username').value.trim();
         const password = document.getElementById('password').value.trim();
@@ -243,7 +268,7 @@ box-shadow: 0 4px 15px rgba(126, 214, 161, 0.4);
         submitButton.textContent = 'กำลังตรวจสอบ...';
 
         google.script.run
-          .withSuccessHandler(function(userData) {
+          .withSuccessHandler(function (userData) {
             if (userData && userData.position && webAppUrl) {
               sessionStorage.setItem('userFullName', userData.fullName);
               window.top.location.href = `${webAppUrl}?page=${userData.position}`;
@@ -253,7 +278,7 @@ box-shadow: 0 4px 15px rgba(126, 214, 161, 0.4);
               submitButton.textContent = 'เข้าสู่ระบบ';
             }
           })
-          .withFailureHandler(function(error) {
+          .withFailureHandler(function (error) {
             alert('เกิดข้อผิดพลาดในการล็อกอิน: ' + error.message);
             submitButton.disabled = false;
             submitButton.textContent = 'เข้าสู่ระบบ';
@@ -263,4 +288,5 @@ box-shadow: 0 4px 15px rgba(126, 214, 161, 0.4);
     });
   </script>
 </body>
+
 </html>

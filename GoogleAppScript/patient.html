@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="th">
+
 <head>
   <meta charset="UTF-8">
   <title>ติดตามข้อมูลผู้ป่วยวัณโรค</title>
@@ -26,6 +27,7 @@
       box-shadow: 0 12px 40px rgba(95, 201, 155, 0.2);
       transition: all 0.4s ease;
     }
+
     .glass-box:hover {
       transform: translateY(-6px);
       box-shadow: 0 16px 50px rgba(95, 201, 155, 0.3);
@@ -35,8 +37,9 @@
       background: linear-gradient(to right, #25b77a, #7ce5b8);
       color: white;
       font-weight: 600;
-      text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
     }
+
     tr:hover {
       background-color: #e8fff3;
       transition: background 0.25s ease-in-out;
@@ -45,6 +48,7 @@
     button {
       transition: all 0.3s ease;
     }
+
     button:hover {
       transform: translateY(-2px) scale(1.05);
     }
@@ -53,9 +57,19 @@
       animation: pulse 1.2s infinite;
       color: #22a676;
     }
+
     @keyframes pulse {
-      0%, 100% { opacity: 0.5; transform: scale(0.98); }
-      50% { opacity: 1; transform: scale(1); }
+
+      0%,
+      100% {
+        opacity: 0.5;
+        transform: scale(0.98);
+      }
+
+      50% {
+        opacity: 1;
+        transform: scale(1);
+      }
     }
 
     .bubble {
@@ -68,12 +82,21 @@
       animation: floatUp 8s infinite ease-in;
       z-index: 0;
     }
+
     @keyframes floatUp {
-      from { transform: translateY(0) scale(1); opacity: 0.7; }
-      to { transform: translateY(-120vh) scale(1.3); opacity: 0; }
+      from {
+        transform: translateY(0) scale(1);
+        opacity: 0.7;
+      }
+
+      to {
+        transform: translateY(-120vh) scale(1.3);
+        opacity: 0;
+      }
     }
   </style>
 </head>
+
 <body>
 
   <!-- 🌿 ลอยฟอง -->
@@ -84,11 +107,13 @@
   <div class="bubble" style="left:90%; width:20px; height:20px; animation-delay: 3s;"></div>
 
   <!-- 🔹 Header -->
-  <header class="fixed top-0 left-0 w-full bg-white/70 backdrop-blur-lg shadow-lg py-3 px-6 flex justify-between items-center border-b border-green-200 z-10">
+  <header
+    class="fixed top-0 left-0 w-full bg-white/70 backdrop-blur-lg shadow-lg py-3 px-6 flex justify-between items-center border-b border-green-200 z-10">
     <h1 class="text-2xl font-semibold text-green-700 flex items-center gap-2">
       💊 ระบบติดตามผู้ป่วยวัณโรค
     </h1>
-    <button id="logoutBtn" class="px-4 py-2 rounded-lg bg-gradient-to-r from-green-400 to-green-600 text-white font-medium hover:from-green-500 hover:to-green-700 shadow-md">
+    <button id="logoutBtn"
+      class="px-4 py-2 rounded-lg bg-gradient-to-r from-green-400 to-green-600 text-white font-medium hover:from-green-500 hover:to-green-700 shadow-md">
       🚪 ออกจากระบบ
     </button>
   </header>
@@ -97,18 +122,22 @@
   <div class="max-w-7xl w-full glass-box mt-28 p-8 rounded-3xl grid grid-cols-1 md:grid-cols-2 gap-8 relative z-10">
 
     <!-- 🧍‍♂️ ข้อมูลผู้ป่วย -->
-    <div class="bg-gradient-to-br from-green-50 to-green-100 border border-green-200 rounded-2xl p-6 shadow-inner hover:shadow-lg transition">
+    <div
+      class="bg-gradient-to-br from-green-50 to-green-100 border border-green-200 rounded-2xl p-6 shadow-inner hover:shadow-lg transition">
       <div class="flex items-center mb-4">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-green-600 mr-2 animate-bounce" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A9 9 0 1118.88 6.197a9 9 0 01-13.758 11.607z" />
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-green-600 mr-2 animate-bounce" fill="none"
+          viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M5.121 17.804A9 9 0 1118.88 6.197a9 9 0 01-13.758 11.607z" />
         </svg>
         <h2 class="text-2xl font-bold text-green-700 drop-shadow">ข้อมูลผู้ป่วย</h2>
       </div>
 
       <div class="flex items-center gap-5">
-        <img id="pPhoto" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTkd1v042iQAqA8lTPkQ0N0ZxIcIDtZt6-Yhg&s"
-             alt="รูปผู้ป่วย"
-             class="w-28 h-28 rounded-full border-4 border-green-300 shadow-md hover:scale-105 transition duration-300">
+        <img id="pPhoto"
+          src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTkd1v042iQAqA8lTPkQ0N0ZxIcIDtZt6-Yhg&s"
+          alt="รูปผู้ป่วย"
+          class="w-28 h-28 rounded-full border-4 border-green-300 shadow-md hover:scale-105 transition duration-300">
         <div class="space-y-3 text-gray-700 leading-relaxed">
           <p><span class="font-semibold text-green-600">ชื่อ-นามสกุล:</span> <span id="pName">นาย สมชาย ใจดี</span></p>
           <p><span class="font-semibold text-green-600">รหัสผู้ป่วย:</span> <span id="pCode">TB001</span></p>
@@ -118,17 +147,21 @@
       </div>
 
       <div class="mt-4 text-gray-700 leading-relaxed">
-        <p><span class="font-semibold text-green-600">ที่อยู่:</span> <span id="pAddress">123 หมู่ 4 ต.บุ่ง อ.เมือง จ.อำนาจเจริญ</span></p>
+        <p><span class="font-semibold text-green-600">ที่อยู่:</span> <span id="pAddress">123 หมู่ 4 ต.บุ่ง อ.เมือง
+            จ.อำนาจเจริญ</span></p>
         <p><span class="font-semibold text-green-600">เบอร์โทร:</span> <span id="pPhone">081-234-5678</span></p>
-        <p><span class="font-semibold text-green-600">คุณหมอผู้ดูแล:</span> <span id="HName">นายศิริพร อำนวยชัย</span></p>
+        <p><span class="font-semibold text-green-600">คุณหมอผู้ดูแล:</span> <span id="HName">นายศิริพร อำนวยชัย</span>
+        </p>
       </div>
     </div>
 
     <!-- 💊 ตารางติดตาม -->
     <div>
       <div class="flex items-center mb-4">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-green-600 mr-2 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7H3v12a2 2 0 002 2z" />
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-green-600 mr-2 animate-pulse" fill="none"
+          viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7H3v12a2 2 0 002 2z" />
         </svg>
         <h2 class="text-2xl font-bold text-green-700 drop-shadow">ตารางติดตามการกินยา</h2>
       </div>
@@ -146,106 +179,111 @@
       </div>
 
       <div class="flex justify-center items-center gap-4 mt-5">
-        <button id="prevBtn" class="px-4 py-2 rounded-lg bg-gradient-to-r from-green-300 to-green-500 text-white font-medium hover:from-green-400 hover:to-green-600 shadow-md">⬅️ ก่อนหน้า</button>
+        <button id="prevBtn"
+          class="px-4 py-2 rounded-lg bg-gradient-to-r from-green-300 to-green-500 text-white font-medium hover:from-green-400 hover:to-green-600 shadow-md">⬅️
+          ก่อนหน้า</button>
         <span id="pageInfo" class="text-green-700 font-semibold"></span>
-        <button id="nextBtn" class="px-4 py-2 rounded-lg bg-gradient-to-r from-green-300 to-green-500 text-white font-medium hover:from-green-400 hover:to-green-600 shadow-md">ถัดไป ➡️</button>
+        <button id="nextBtn"
+          class="px-4 py-2 rounded-lg bg-gradient-to-r from-green-300 to-green-500 text-white font-medium hover:from-green-400 hover:to-green-600 shadow-md">ถัดไป
+          ➡️</button>
       </div>
 
       <div id="loading" class="text-center mt-4 font-medium">⏳ กำลังโหลดข้อมูล...</div>
     </div>
   </div>
 
-<script>
-let allData = [];
-let currentPage = 1;
-const rowsPerPage = 6;
+  <script>
+    let allData = [];
+    let currentPage = 1;
+    const rowsPerPage = 6;
 
-// ฟังก์ชันดึงข้อมูลจาก Google Sheet
-function fetchData() {
-  google.script.run.withSuccessHandler(showPatientData).getPatientData();
-}
+    // ฟังก์ชันดึงข้อมูลจาก Google Sheet
+    function fetchData() {
+      google.script.run.withSuccessHandler(showPatientData).getPatientData();
+    }
 
-// แสดงข้อมูล
-function showPatientData(data) {
-  const tbody = document.getElementById('tableBody');
-  const loading = document.getElementById('loading');
-  loading.style.display = 'none';
+    // แสดงข้อมูล
+    function showPatientData(data) {
+      const tbody = document.getElementById('tableBody');
+      const loading = document.getElementById('loading');
+      loading.style.display = 'none';
 
-  if (!data || data.length === 0 || data[0].error) {
-    allData = [];
-    currentPage = 1;
-    tbody.innerHTML = `<tr><td colspan="2" class="text-red-500 py-4">⚠️ ${data[0]?.error || 'ไม่พบข้อมูล'}</td></tr>`;
-    document.getElementById('pageInfo').textContent = '';
-    return;
-  }
+      if (!data || data.length === 0 || data[0].error) {
+        allData = [];
+        currentPage = 1;
+        tbody.innerHTML = `<tr><td colspan="2" class="text-red-500 py-4">⚠️ ${data[0]?.error || 'ไม่พบข้อมูล'}</td></tr>`;
+        document.getElementById('pageInfo').textContent = '';
+        return;
+      }
 
-  allData = data;
+      allData = data;
 
-  // ปรับ currentPage ให้ไม่เกินจำนวนหน้าปัจจุบัน
-  const totalPages = Math.ceil(allData.length / rowsPerPage);
-  if (currentPage > totalPages) currentPage = totalPages || 1;
+      // ปรับ currentPage ให้ไม่เกินจำนวนหน้าปัจจุบัน
+      const totalPages = Math.ceil(allData.length / rowsPerPage);
+      if (currentPage > totalPages) currentPage = totalPages || 1;
 
-  renderTable();
-}
+      renderTable();
+    }
 
-// แสดงตาราง
-function renderTable() {
-  const tbody = document.getElementById('tableBody');
-  tbody.innerHTML = "";
+    // แสดงตาราง
+    function renderTable() {
+      const tbody = document.getElementById('tableBody');
+      tbody.innerHTML = "";
 
-  if (allData.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="2" class="text-red-500 py-4">⚠️ ไม่มีข้อมูล</td></tr>`;
-    document.getElementById('pageInfo').textContent = '';
-    return;
-  }
+      if (allData.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="2" class="text-red-500 py-4">⚠️ ไม่มีข้อมูล</td></tr>`;
+        document.getElementById('pageInfo').textContent = '';
+        return;
+      }
 
-  const start = (currentPage - 1) * rowsPerPage;
-  const end = start + rowsPerPage;
-  const pageData = allData.slice(start, end);
+      const start = (currentPage - 1) * rowsPerPage;
+      const end = start + rowsPerPage;
+      const pageData = allData.slice(start, end);
 
-  pageData.forEach(row => {
-    const tr = document.createElement('tr');
-    tr.classList.add("hover:bg-green-50");
-    tr.innerHTML = `
+      pageData.forEach(row => {
+        const tr = document.createElement('tr');
+        tr.classList.add("hover:bg-green-50");
+        tr.innerHTML = `
       <td class="border border-green-100 p-3">${row['วันที่'] || '-'}</td>
       <td class="border border-green-100 p-3">${row['เวลา'] || '-'}</td>
     `;
-    tbody.appendChild(tr);
-  });
+        tbody.appendChild(tr);
+      });
 
-  const totalPages = Math.ceil(allData.length / rowsPerPage);
-  document.getElementById('pageInfo').textContent = `หน้า ${currentPage} จาก ${totalPages}`;
-}
-
-// ปุ่ม pagination
-document.getElementById('prevBtn').addEventListener('click', () => {
-  if (currentPage > 1) { currentPage--; renderTable(); }
-});
-document.getElementById('nextBtn').addEventListener('click', () => {
-  const totalPages = Math.ceil(allData.length / rowsPerPage);
-  if (currentPage < totalPages) { currentPage++; renderTable(); }
-});
-
-// โหลดข้อมูลครั้งแรกและรีเฟรชทุก 10 วินาที
-fetchData();
-setInterval(fetchData, 10000);
-
-// ออกจากระบบ
-function logout() {
-  if (confirm('คุณต้องการออกจากระบบหรือไม่?')) {
-    sessionStorage.removeItem('userFullName');
-    if (typeof google !== 'undefined' && google.script && google.script.run) {
-      google.script.run.withSuccessHandler((url) => {
-        const baseUrl = url.split('?')[0];
-        window.top.location.href = baseUrl + '?page=index';
-      }).getWebAppUrl();
-    } else {
-      window.location.href = 'index.html';
+      const totalPages = Math.ceil(allData.length / rowsPerPage);
+      document.getElementById('pageInfo').textContent = `หน้า ${currentPage} จาก ${totalPages}`;
     }
-  }
-}
-document.getElementById('logoutBtn').addEventListener('click', logout);
-</script>
+
+    // ปุ่ม pagination
+    document.getElementById('prevBtn').addEventListener('click', () => {
+      if (currentPage > 1) { currentPage--; renderTable(); }
+    });
+    document.getElementById('nextBtn').addEventListener('click', () => {
+      const totalPages = Math.ceil(allData.length / rowsPerPage);
+      if (currentPage < totalPages) { currentPage++; renderTable(); }
+    });
+
+    // โหลดข้อมูลครั้งแรกและรีเฟรชทุก 10 วินาที
+    fetchData();
+    setInterval(fetchData, 10000);
+
+    // ออกจากระบบ
+    function logout() {
+      if (confirm('คุณต้องการออกจากระบบหรือไม่?')) {
+        sessionStorage.removeItem('userFullName');
+        if (typeof google !== 'undefined' && google.script && google.script.run) {
+          google.script.run.withSuccessHandler((url) => {
+            const baseUrl = url.split('?')[0];
+            window.top.location.href = baseUrl + '?page=index';
+          }).getWebAppUrl();
+        } else {
+          window.location.href = 'index.html';
+        }
+      }
+    }
+    document.getElementById('logoutBtn').addEventListener('click', logout);
+  </script>
 
 </body>
+
 </html>
