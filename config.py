@@ -12,7 +12,7 @@ LINE_USER_ID = "Uaa30a62f505cfb7a3e546ed644e4755f"
 # ☁️ GOOGLE SHEETS / WEB APP SETTINGS
 # =========================================
 # URL ของ Google Apps Script Web App (Deploy as Web App)
-WEBAPP_URL = "https://script.google.com/macros/s/AKfycbyRRsZBoB8X7zeYn9eCQmKhgGWM1spHgBqHly1a6fxwd_nz7sMwlHJfWLWyFe9T0S3F/exec"
+WEBAPP_URL = "https://script.google.com/macros/s/AKfycbzbxWYrMm4hLpA70R3MqH9_St1djR3P-DDduRYsnpXxjWBDxCf0zjSfVxD_Ycjl6vzS/exec"
 SHEET_NAME = "Patient"      # ชื่อชีตที่จะบันทึกข้อมูล
 OFFLINE_LOG_FILE = "offline_logs.json" # ไฟล์เก็บข้อมูลชั่วคราวเมื่อเน็ตหลุด
 
