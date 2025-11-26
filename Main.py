@@ -43,7 +43,9 @@ class FullScreenImageApp:
         self.manual_page = ManualUI(self.canvas, self.screen_width, self.screen_height, on_back_callback=self.show_main_ui)
 
         # ตัวแปรระบบ
-        self.eat_days = 0
+        # 🟢 [แก้ไข] โหลดค่าเริ่มต้นจาก Config ถ้าไม่มีให้เริ่มที่ 0
+        self.eat_days = getattr(config, 'EAT_DAYS', 0)
+        
         self.eatday_text_id = None
         self.time_text_id = None
         self.is_scanning = False 
@@ -142,9 +144,16 @@ class FullScreenImageApp:
                 
                 # 2. Reload config
                 importlib.reload(config)
+                
+                # 🟢 [แก้ไข] รีเซ็ตจำนวนวันเป็น 0 สำหรับผู้ป่วยคนใหม่
+                self.eat_days = 0
+                self.save_eat_days_to_config(0)
+                if self.eatday_text_id:
+                    self.canvas.itemconfigure(self.eatday_text_id, text="0")
+                
                 print(f"✅ โหลดค่า Config ใหม่: Sheet -> {config.SHEET_NAME}, Name -> {config.KNOWN_NAME}")
 
-                # 3. 🟢 [Update] อัปเดตค่าใน Object เดิมแทนการสร้างใหม่
+                # 3. อัปเดตค่าใน Object เดิม
                 if hasattr(self, 'verifier'):
                     self.verifier.update_settings(
                         new_sheet_name=config.SHEET_NAME,
@@ -152,7 +161,6 @@ class FullScreenImageApp:
                         new_image_path=config.KNOWN_IMAGE_PATH
                     )
                 else:
-                    # กันเหนียว: กรณีรันครั้งแรกแล้วยังไม่มี verifier
                     self.verifier = FaceVerifier(
                         known_image_path=config.KNOWN_IMAGE_PATH,
                         known_name=config.KNOWN_NAME,
@@ -182,8 +190,37 @@ class FullScreenImageApp:
 
     def increment_eatday(self):
         self.eat_days += 1
+        # อัปเดต UI
         if self.eatday_text_id:
             self.canvas.itemconfigure(self.eatday_text_id, text=str(self.eat_days))
+        
+        # 🟢 [เพิ่ม] บันทึกลง config.py ทันที
+        self.save_eat_days_to_config(self.eat_days)
+
+    def save_eat_days_to_config(self, days):
+        """ฟังก์ชันสำหรับบันทึกค่า EAT_DAYS ลงไฟล์ config.py"""
+        try:
+            config_path = "config.py"
+            # อ่านข้อมูลเดิม
+            with open(config_path, "r", encoding="utf-8") as f:
+                lines = f.readlines()
+            
+            # เขียนข้อมูลใหม่
+            with open(config_path, "w", encoding="utf-8") as f:
+                found = False
+                for line in lines:
+                    if line.strip().startswith("EAT_DAYS ="):
+                        f.write(f"EAT_DAYS = {days} # อัปเดตอัตโนมัติ\n")
+                        found = True
+                    else:
+                        f.write(line)
+                # ถ้ายังไม่มีตัวแปรนี้ ให้เพิ่มต่อท้าย
+                if not found:
+                    f.write(f"\nEAT_DAYS = {days} # อัปเดตอัตโนมัติ\n")
+            
+            print(f"💾 บันทึกจำนวนวัน ({days}) ลง config.py เรียบร้อย")
+        except Exception as e:
+            print(f"❌ ไม่สามารถบันทึก config.py: {e}")
 
     def update_time(self):
         now = datetime.now().strftime("%H:%M:%S")

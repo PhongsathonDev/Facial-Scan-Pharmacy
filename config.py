@@ -3,46 +3,47 @@
 # =========================================
 # 📢 LINE NOTIFY SETTINGS
 # =========================================
-# ใส่ Token ที่ได้จาก https://notify-bot.line.me/my/
 LINE_ACCESS_TOKEN = "90PR4QmENVZ8HgX6H9Ee7lrByaFndu4+VBjrC3iUJN0kmXQ7zma/srxGsx4gCQ3bdwPaqS38zcVjtuANVYZoqAgey4AhockHFJ+OK/3K6aGnEa11RuGpM51rDltAT8lXe69f6wbkatpra28B7WLdFAdB04t89/1O/w1cDnyilFU=" 
-# User ID ที่ต้องการส่งข้อความหา (ดูจาก Line Developers หรือ Log)
 LINE_USER_ID = "Uaa30a62f505cfb7a3e546ed644e4755f"
 
 # =========================================
 # ☁️ GOOGLE SHEETS / WEB APP SETTINGS
 # =========================================
-# URL ของ Google Apps Script Web App (Deploy as Web App)
 WEBAPP_URL = "https://script.google.com/macros/s/AKfycbzbxWYrMm4hLpA70R3MqH9_St1djR3P-DDduRYsnpXxjWBDxCf0zjSfVxD_Ycjl6vzS/exec"
-SHEET_NAME = "Patient"      # ชื่อชีตที่จะบันทึกข้อมูล
-OFFLINE_LOG_FILE = "offline_logs.json" # ไฟล์เก็บข้อมูลชั่วคราวเมื่อเน็ตหลุด
+SHEET_NAME = "Patient"
+OFFLINE_LOG_FILE = "offline_logs.json"
 
 # =========================================
 # 🔌 HARDWARE & SERIAL (ESP32)
 # =========================================
-# เช็คพอร์ตให้ดี: Windows มักจะเป็น "COM3", "COM4" / Raspberry Pi มักเป็น "/dev/ttyUSB0" หรือ "/dev/ttyACM0"
 SERIAL_PORT = "/dev/ttyUSB0" 
 SERIAL_BAUDRATE = 115200
 
 # =========================================
 # 👤 FACE RECOGNITION SETTINGS
 # =========================================
-KNOWN_IMAGE_PATH = "patient.jpeg" # ชื่อไฟล์รูปต้นแบบ
-KNOWN_NAME = "patient"            # ชื่อที่จะบันทึกลงระบบ
-FACE_ID = "patient_001"           # รหัสประจำตัว (ถ้ามี)
+KNOWN_IMAGE_PATH = "patient.jpeg"
+KNOWN_NAME = "patient"
+FACE_ID = "patient_001"
 
-TOLERANCE = 0.45         # ความเข้มงวดในการตรวจจับ (ค่าน้อย = เข้มงวดมาก, ค่าปกติ ~0.6)
-HOLD_SECONDS = 3.0       # เวลาที่ต้องมองกล้องค้างไว้ (วินาที) เพื่อยืนยัน
+TOLERANCE = 0.45
+HOLD_SECONDS = 3.0
 
 # =========================================
 # 📷 CAMERA SETTINGS
 # =========================================
-CAMERA_INDEX = 0         # 0 คือกล้องตัวแรก, 1 คือตัวถัดไป
+CAMERA_INDEX = 0
 FRAME_WIDTH = 1280
 FRAME_HEIGHT = 720
 
 # =========================================
 # ⏰ ALARM & UI SETTINGS
 # =========================================
-ALARM_HOUR = 20          # ชั่วโมงแจ้งเตือน (24-hour format)
-ALARM_MINUTE = 0         # นาทีแจ้งเตือน
-BG_IMAGE_PATH = "bg.png" # รูปพื้นหลัง
+ALARM_HOUR = 20
+ALARM_MINUTE = 0
+BG_IMAGE_PATH = "bg.png"
+
+# =========================================
+# 💊 DATA STORAGE (AUTO SAVE)
+# =========================================
+EAT_DAYS = 0
