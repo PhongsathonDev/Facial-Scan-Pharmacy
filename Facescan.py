@@ -21,13 +21,15 @@ class FaceVerifier:
         sheet_name: str = config.SHEET_NAME,
         face_id: str = config.FACE_ID,
         serial_port: str | None = config.SERIAL_PORT,
-        serial_baudrate: int = config.SERIAL_BAUDRATE
+        serial_baudrate: int = config.SERIAL_BAUDRATE,
+        scan_timeout: float = config.SCAN_TIMEOUT
     ):
         self.known_image_path = known_image_path
         self.known_name = known_name
         self.tolerance = tolerance
         self.hold_seconds = hold_seconds
         self.camera_index = camera_index
+        self.scan_timeout = scan_timeout
 
         self.webapp_url = webapp_url
         self.sheet_name = sheet_name
@@ -309,33 +311,43 @@ class FaceVerifier:
         cv2.namedWindow(window_name, cv2.WND_PROP_FULLSCREEN)
         cv2.setWindowProperty(window_name, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
 
-        # 🟢 [Update] ใช้ Skip Frame เพื่อลดภาระ CPU
         frame_count = 0
-        process_every_n_frames = 2 # ประมวลผลทุกๆ 2 เฟรม
-
-        # ตัวแปรสำหรับเก็บผลลัพธ์เฟรมก่อนหน้า (ใช้แสดงผลตอนข้ามเฟรม)
+        process_every_n_frames = 2
+        
         last_locs, last_names, last_rec = [], [], False
+
+        # ✅ เริ่มจับเวลา Timeout
+        start_scan_time = time.time()
 
         try:
             while True:
+                # ✅ ตรวจสอบว่าหมดเวลาหรือยัง
+                elapsed_scan_time = time.time() - start_scan_time
+                if elapsed_scan_time > self.scan_timeout:
+                    print(f"⏰ หมดเวลาสแกน ({self.scan_timeout} วินาที) - ปิดกล้อง")
+                    break
+
                 ret, frame = self.video_capture.read()
                 if not ret: break
 
                 frame_count += 1
                 display_frame = frame.copy()
 
-                # ประมวลผลเฉพาะเฟรมที่กำหนด
                 if frame_count % process_every_n_frames == 0:
                     last_locs, last_names, last_rec = self._process_frame(frame)
                     self._update_hold_state(last_rec)
                 
-                # วาด UI โดยใช้ข้อมูลล่าสุด (ไม่ว่าจะคำนวณใหม่หรือของเก่า)
                 self._draw_tuberbox_ui(display_frame, last_locs, last_names)
+
+                # ✅ แสดงเวลานับถอยหลังบนหน้าจอ (Optional)
+                time_left = max(0, int(self.scan_timeout - elapsed_scan_time))
+                cv2.putText(display_frame, f"Time left: {time_left}s", (50, 100), 
+                            cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 255, 255), 2)
 
                 cv2.imshow(window_name, display_frame)
 
                 if self.verified:
-                    cv2.waitKey(2000) # โชว์หน้า Verified 2 วินาทีแล้วปิด
+                    cv2.waitKey(2000)
                     break
                 if cv2.waitKey(1) & 0xFF == ord('q'):
                     break

@@ -43,7 +43,6 @@ class FullScreenImageApp:
         self.manual_page = ManualUI(self.canvas, self.screen_width, self.screen_height, on_back_callback=self.show_main_ui)
 
         # ตัวแปรระบบ
-        # 🟢 [แก้ไข] โหลดค่าเริ่มต้นจาก Config ถ้าไม่มีให้เริ่มที่ 0
         self.eat_days = getattr(config, 'EAT_DAYS', 0)
         
         self.eatday_text_id = None
@@ -67,7 +66,8 @@ class FullScreenImageApp:
             sheet_name=config.SHEET_NAME,
             face_id=config.FACE_ID,
             serial_port=config.SERIAL_PORT,
-            serial_baudrate=config.SERIAL_BAUDRATE
+            serial_baudrate=config.SERIAL_BAUDRATE,
+            scan_timeout=config.SCAN_TIMEOUT
         )
 
         # สร้าง UI หน้าหลัก
@@ -160,6 +160,7 @@ class FullScreenImageApp:
                         new_known_name=config.KNOWN_NAME,
                         new_image_path=config.KNOWN_IMAGE_PATH
                     )
+                    self.verifier.scan_timeout = config.SCAN_TIMEOUT
                 else:
                     self.verifier = FaceVerifier(
                         known_image_path=config.KNOWN_IMAGE_PATH,
@@ -171,7 +172,8 @@ class FullScreenImageApp:
                         sheet_name=config.SHEET_NAME,
                         face_id=config.FACE_ID,
                         serial_port=config.SERIAL_PORT,
-                        serial_baudrate=config.SERIAL_BAUDRATE
+                        serial_baudrate=config.SERIAL_BAUDRATE,
+                        scan_timeout=config.SCAN_TIMEOUT
                     )
                 
                 print("✅ ระบบพร้อมใช้งานสำหรับผู้ป่วยคนใหม่แล้ว!")
