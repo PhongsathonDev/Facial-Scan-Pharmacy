@@ -128,9 +128,6 @@ def draw_numpad(frame):
         ty = by + (BTN_SIZE + label_size[1]) // 2
         cv2.putText(frame, label, (tx, ty), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (255, 255, 255), 2)
 
-    # คำแนะนำด้านล่าง
-    cv2.putText(frame, "Type ID and press OK to save", (width//2 - 280, height - 50), 
-                cv2.FONT_HERSHEY_SIMPLEX, 0.8, (200, 200, 200), 1)
 
 def register_new_face(filename="patient.jpeg"):
     # --- ตั้งค่า MediaPipe ---
@@ -255,11 +252,6 @@ def register_new_face(filename="patient.jpeg"):
             # ตรวจสอบว่ามีการกด OK หรือยัง
             if selected_number is not None:
                 print(f"🔢 Selected Patient ID: {selected_number}")
-                
-                # แสดงข้อความยืนยัน
-                cv2.putText(frame, f"Saving to Patient{selected_number}...", (200, 600), 
-                            cv2.FONT_HERSHEY_SIMPLEX, 2, (0, 255, 0), 4)
-                cv2.imshow(window_name, frame)
                 cv2.waitKey(500)
                 
                 # อัปเดตไฟล์ Config
